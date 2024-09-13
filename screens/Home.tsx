@@ -44,12 +44,15 @@ const Home = () => {
         const menProduct = allProducts.filter(
           (item) => item.attributes.gender === "male"
         );
+
         const womenProduct = allProducts.filter(
           (item) => item.attributes.gender === "female"
         );
+
         setWomenProduct(womenProduct);
         setMenProduct(menProduct);
         setIsProductLoaded(true);
+
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -100,6 +103,7 @@ const Home = () => {
       {/*==========================
         Header section
       =============================*/}
+
       <View style={[styles.headerContainer]}>
         <View style={{ width: "50%" }}>
           {/* <Image
@@ -145,6 +149,7 @@ const Home = () => {
       {/*========================== 
           Home Banner Section
       ========================== */}
+
       <View style={{ marginBottom: 25 }}>
         <Banners />
       </View>
@@ -152,6 +157,7 @@ const Home = () => {
       {/*=========================
             Best Selling for Womens
       ======================== */}
+
       <View>
         <View style={utilsStyles.titleContainer}>
           <Text style={utilsStyles.title}>Best Selling</Text>
@@ -171,6 +177,7 @@ const Home = () => {
       {/*=========================
             Best Selling for mens
       ========================*/}
+
       <View style={{ marginTop: 20 }}>
         <View style={utilsStyles.titleContainer}>
           <Text style={utilsStyles.title}>Best Selling</Text>
@@ -181,6 +188,7 @@ const Home = () => {
           <CategorySection product={menProduct} />
         </ScrollView>
       </View>
+
     </ScrollView>
   );
 };

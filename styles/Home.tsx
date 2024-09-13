@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: "row",
     width: "100%",
-    marginTop: 50,
+    marginTop: 10,
     alignItems: "center",
   },
 

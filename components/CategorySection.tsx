@@ -27,8 +27,8 @@ const CategorySection: React.FC<{ product?: Product[] }> = ({ product }) => {
   }, []);
 
   // Check if productData is populated before rendering ProductCards
-  if (!productData.length || productLoading) {
-    return <Text>Loading...</Text>; // Or some loading indicator
+  if ( productLoading) {
+    return <Text>Loading...</Text>;
   }
 
   return (
