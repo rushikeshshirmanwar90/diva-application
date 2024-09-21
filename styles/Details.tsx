@@ -3,31 +3,37 @@ import { StyleSheet, Dimensions } from "react-native";
 const { width } = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
+
   container: {
     flexGrow: 1,
     padding: 16,
     backgroundColor: "#fff",
     position: "relative",
   },
+
   swiperContainer: {
     width: width,
     marginLeft: -15,
     marginBottom: 10,
   },
+
   slide: {
     width: width,
     justifyContent: "center",
     alignItems: "center",
   },
+
   bannerImage: {
     width: width - 25,
     marginVertical: 20,
     height: 430,
     borderRadius: 10,
   },
+
   productContainer: {
     marginBottom: 20,
   },
+
   title: {
     fontSize: 16,
     color: "#333",
@@ -44,8 +50,9 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 8,
   },
+
   rating: {
-    fontSize: 14,
+    fontSize: 17,
     color: "#333",
   },
 
@@ -83,6 +90,7 @@ export const styles = StyleSheet.create({
     marginLeft: 10,
     textDecorationLine: "line-through",
   },
+
   cartButton: {
     backgroundColor: "#000",
     paddingVertical: 12,
@@ -91,9 +99,11 @@ export const styles = StyleSheet.create({
     bottom: 10,
     alignItems: "center",
   },
+
   cartButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
   },
+
 });

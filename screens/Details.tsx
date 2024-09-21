@@ -28,7 +28,6 @@ const Details = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Swiper Component */}
       <View style={styles.swiperContainer}>
         <SwiperFlatList
           autoplay
@@ -67,23 +66,29 @@ const Details = () => {
         </View>
 
         <View style={styles.infoContainer}>
+
           <View style={styles.infoRow}>
             <Icon name="autorenew" size={30} color="#333" />
             <Text style={styles.infoText}>15 Days Return Policy</Text>
           </View>
+
           <View style={styles.infoRow}>
             <Icon name="verified-user" size={30} color="#333" />
             <Text style={styles.infoText}>6 Months Warranty</Text>
           </View>
+
           <View style={styles.infoRow}>
             <Text style={styles.infoText}>No Description</Text>
           </View>
+
         </View>
 
         <TouchableOpacity style={styles.cartButton}>
           <Text style={styles.cartButtonText}>Add To Cart</Text>
         </TouchableOpacity>
+
       </View>
+
     </ScrollView>
   );
 };
