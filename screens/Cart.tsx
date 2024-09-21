@@ -36,7 +36,6 @@ const products = [
       "https://divatheindianjewel.com/_next/image?url=https%3A%2F%2Fdiva-images.blr1.digitaloceanspaces.com%2Fbb687176adbf80e7fd4a783e225d6c97.jpg&w=256&q=75",
     quantity: 1,
   },
-
 ];
 
 const CartScreen = () => {
@@ -106,7 +105,6 @@ const CartScreen = () => {
   );
 
   return (
-
     <View style={styles.container}>
       <Text style={styles.header}>Your Cart</Text>
       <FlatList
@@ -123,7 +121,6 @@ const CartScreen = () => {
         </TouchableOpacity>
       </View>
     </View>
-
   );
 };
 
@@ -245,5 +242,4 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
   },
-
 });

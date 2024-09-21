@@ -13,7 +13,7 @@ const ProductCard: React.FC<{ item?: Product }> = ({ item }) => {
         style={styles.productImage}
         resizeMode="cover"
       />
-      
+
       <Text style={styles.productTitle}>{item?.attributes.name}</Text>
       <View style={styles.priceContainer}>
         <Text style={styles.discountedPrice}>₹{item?.attributes.price}</Text>
@@ -22,7 +22,7 @@ const ProductCard: React.FC<{ item?: Product }> = ({ item }) => {
         </Text>
       </View>
 
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button}>  
         <Text style={styles.buttonText}>View Product</Text>
       </TouchableOpacity>
     </View>
