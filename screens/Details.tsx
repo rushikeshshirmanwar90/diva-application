@@ -66,7 +66,6 @@ const Details = () => {
         </View>
 
         <View style={styles.infoContainer}>
-
           <View style={styles.infoRow}>
             <Icon name="autorenew" size={30} color="#333" />
             <Text style={styles.infoText}>15 Days Return Policy</Text>
@@ -80,15 +79,12 @@ const Details = () => {
           <View style={styles.infoRow}>
             <Text style={styles.infoText}>No Description</Text>
           </View>
-
         </View>
 
         <TouchableOpacity style={styles.cartButton}>
           <Text style={styles.cartButtonText}>Add To Cart</Text>
         </TouchableOpacity>
-
       </View>
-
     </ScrollView>
   );
 };

@@ -8,15 +8,15 @@ import Cart from "../../screens/Cart";
 import CartScreen from "../../screens/Cart2";
 import CategoryDetail from "../../screens/CategoryDetail";
 import AddressForm from "../../screens/Checkout";
+import Checkout from "../../screens/Checkout";
 
 const Stack = createNativeStackNavigator();
 
 const Navigator = () => {
   return (
-
     <NavigationContainer>
-
-      <Stack.Navigator screenOptions={{ headerShown: true }}>
+      <Stack.Navigator>
+        <Stack.Screen name="Checkout" component={Checkout} />
         <Stack.Screen name="Cart2" component={CartScreen} />
         <Stack.Screen name="Cart" component={Cart} />
         <Stack.Screen name="User Address" component={AddressForm} />
@@ -24,7 +24,6 @@ const Navigator = () => {
         <Stack.Screen name="DIVA" component={Home} />
         <Stack.Screen name="Details" component={Details} />
       </Stack.Navigator>
-
     </NavigationContainer>
   );
 };

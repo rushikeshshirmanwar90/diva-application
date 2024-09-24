@@ -1,212 +1,297 @@
-import React from "react";
-import { ScrollView, Text, StyleSheet } from "react-native";
-import { TextInput, Button } from "react-native-paper";
-import { Formik } from "formik";
-import * as Yup from "yup";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from "react-native";
+import { MaterialIcons } from "@expo/vector-icons"; // For the back arrow icon
+import { Picker } from "@react-native-picker/picker";
 
-interface AddressFormValues {
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  email: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  address: string;
+interface Errors {
+  fullName?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  pincode?: string;
+  city?: string;
+  state?: string;
+  phone?: string;
+  email?: string;
 }
 
-const AddressSchema = Yup.object().shape({
-  firstName: Yup.string().required("First name is required"),
-  lastName: Yup.string().required("Last name is required"),
-  phoneNumber: Yup.string()
-    .required("Phone number is required")
-    .matches(/^\d{10}$/, "Phone number must be 10 digits"),
-  email: Yup.string().email("Invalid email").required("Email is required"),
-  city: Yup.string().required("City is required"),
-  state: Yup.string().required("State is required"),
-  postalCode: Yup.string()
-    .required("Postal code is required")
-    .matches(/^\d{6}$/, "Postal code must be 6 digits"),
-  address: Yup.string().required("Address is required"),
-});
+const CheckoutScreen: React.FC = () => {
+  const [fullName, setFullName] = useState<string>("");
+  const [addressLine1, setAddressLine1] = useState<string>("");
+  const [addressLine2, setAddressLine2] = useState<string>("");
+  const [pincode, setPincode] = useState<string>("");
+  const [city, setCity] = useState<string>("");
+  const [state, setState] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
 
-const BillingAddressForm: React.FC = () => {
-  const initialValues: AddressFormValues = {
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
-    email: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    address: "",
+  const [errors, setErrors] = useState<Errors>({});
+
+  // Validation function
+  const validateForm = (): boolean => {
+    const newErrors: Errors = {};
+
+    // Full name validation
+    if (!fullName) newErrors.fullName = "Full Name is required";
+
+    // Address line validation
+    if (!addressLine1) newErrors.addressLine1 = "Address Line 1 is required";
+    if (!addressLine2) newErrors.addressLine2 = "Address Line 2 is required";
+
+    // Pincode validation
+    const pincodeRegex = /^[1-9][0-9]{5}$/;
+    if (!pincode) {
+      newErrors.pincode = "Pincode is required";
+    } else if (!pincodeRegex.test(pincode)) {
+      newErrors.pincode = "Invalid pincode";
+    }
+
+    // City validation
+    if (!city) newErrors.city = "City is required";
+
+    // State validation
+    if (!state) newErrors.state = "State is required";
+
+    // Phone validation
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phone) {
+      newErrors.phone = "Phone number is required";
+    } else if (!phoneRegex.test(phone)) {
+      newErrors.phone = "Invalid phone number";
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(email)) {
+      newErrors.email = "Invalid email format";
+    }
+
+    setErrors(newErrors);
+
+    // Return true if no errors
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Submit function
+  const handleSubmit = (): void => {
+    if (validateForm()) {
+      Alert.alert("Success", "Form submitted successfully");
+      // Handle form submission (e.g., send data to backend)
+    } else {
+      Alert.alert("Error", "Please correct the errors before submitting");
+    }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Billing Address</Text>
+    <ScrollView contentContainerStyle={{ padding: 20, backgroundColor: "white" }}>
 
-      <Formik
-        initialValues={initialValues}
-        validationSchema={AddressSchema}
-        onSubmit={(values) => {
-          // Handle form submission
-          console.log("Form Data:", values);
+      <View
+        style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}
+      >
+        <MaterialIcons name="arrow-back" size={24} color="black" />
+        <Text style={{ fontSize: 20, marginLeft: 10 }}>Checkout</Text>
+      </View>
+
+      <Text
+        style={{
+          fontSize: 16,
+          fontWeight: "bold",
+          marginBottom: 10,
+          color: "#f3c3d0",
         }}
       >
-        {({
-          handleChange,
-          handleBlur,
-          handleSubmit,
-          values,
-          errors,
-          touched,
-        }) => (
-          <>
-            <TextInput
-              label="First Name"
-              onChangeText={handleChange("firstName")}
-              onBlur={handleBlur("firstName")}
-              value={values.firstName}
-              style={styles.input}
-            />
-            {touched.firstName && errors.firstName && (
-              <Text style={styles.errorText}>{errors.firstName}</Text>
-            )}
+        Shipping Address
+      </Text>
 
-            <TextInput
-              label="Last Name"
-              onChangeText={handleChange("lastName")}
-              onBlur={handleBlur("lastName")}
-              value={values.lastName}
-              style={styles.input}
-            />
-            {touched.lastName && errors.lastName && (
-              <Text style={styles.errorText}>{errors.lastName}</Text>
-            )}
+      <Text style={{ fontWeight: "bold" }}>Full Name*</Text>
+      <TextInput
+        placeholder="eg: John Doe"
+        value={fullName}
+        onChangeText={setFullName}
+        style={{
+          borderWidth: 1,
+          borderColor: errors.fullName ? "red" : "#ccc",
+          padding: 10,
+          borderRadius: 8,
+          marginVertical: 10,
+        }}
+      />
+      {errors.fullName && (
+        <Text style={{ color: "red" }}>{errors.fullName}</Text>
+      )}
 
-            <TextInput
-              label="Phone Number"
-              onChangeText={handleChange("phoneNumber")}
-              onBlur={handleBlur("phoneNumber")}
-              value={values.phoneNumber}
-              style={styles.input}
-              keyboardType="numeric"
-            />
-            {touched.phoneNumber && errors.phoneNumber && (
-              <Text style={styles.errorText}>{errors.phoneNumber}</Text>
-            )}
+      {/* Address Line 1 */}
+      <Text style={{ fontWeight: "bold" }}>Address Line 1 (Street, Area)*</Text>
+      <TextInput
+        placeholder="eg: Street name"
+        value={addressLine1}
+        onChangeText={setAddressLine1}
+        style={{
+          borderWidth: 1,
+          borderColor: errors.addressLine1 ? "red" : "#ccc",
+          padding: 10,
+          borderRadius: 8,
+          marginVertical: 10,
+        }}
+      />
+      {errors.addressLine1 && (
+        <Text style={{ color: "red" }}>{errors.addressLine1}</Text>
+      )}
 
-            <TextInput
-              label="Enter Email"
-              onChangeText={handleChange("email")}
-              onBlur={handleBlur("email")}
-              value={values.email}
-              style={styles.input}
-              keyboardType="email-address"
-            />
-            {touched.email && errors.email && (
-              <Text style={styles.errorText}>{errors.email}</Text>
-            )}
+      {/* Address Line 2 */}
+      <Text style={{ fontWeight: "bold" }}>
+        Address Line 2 (House Number, Building)*
+      </Text>
+      <TextInput
+        placeholder="eg: House/Flat no"
+        value={addressLine2}
+        onChangeText={setAddressLine2}
+        style={{
+          borderWidth: 1,
+          borderColor: errors.addressLine2 ? "red" : "#ccc",
+          padding: 10,
+          borderRadius: 8,
+          marginVertical: 10,
+        }}
+      />
+      {errors.addressLine2 && (
+        <Text style={{ color: "red" }}>{errors.addressLine2}</Text>
+      )}
 
-            <TextInput
-              label="City"
-              onChangeText={handleChange("city")}
-              onBlur={handleBlur("city")}
-              value={values.city}
-              style={styles.input}
-            />
+      {/* Pincode */}
+      <Text style={{ fontWeight: "bold" }}>Pincode*</Text>
+      <TextInput
+        placeholder="eg: 509001"
+        value={pincode}
+        onChangeText={setPincode}
+        keyboardType="numeric"
+        style={{
+          borderWidth: 1,
+          borderColor: errors.pincode ? "red" : "#ccc",
+          padding: 10,
+          borderRadius: 8,
+          marginVertical: 10,
+        }}
+      />
+      {errors.pincode && <Text style={{ color: "red" }}>{errors.pincode}</Text>}
 
-            {touched.city && errors.city && (
-              <Text style={styles.errorText}>{errors.city}</Text>
-            )}
+      {/* City and State */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          marginBottom: 10,
+        }}
+      >
+        <View style={{ flex: 1, marginRight: 10 }}>
 
-            <TextInput
-              label="State"
-              onChangeText={handleChange("state")}
-              onBlur={handleBlur("state")}
-              value={values.state}
-              style={styles.input}
-            />
+          <Text style={{ fontWeight: "bold" }}>Town/City*</Text>
 
-            {touched.state && errors.state && (
-              <Text style={styles.errorText}>{errors.state}</Text>
-            )}
+          <TextInput
+            placeholder="eg: Bengaluru"
+            value={city}
+            onChangeText={setCity}
+            style={{
+              borderWidth: 1,
+              borderColor: errors.city ? "red" : "#ccc",
+              padding: 10,
+              borderRadius: 8,
+              marginVertical: 10,
+            }}
+          />
 
-            <TextInput
-              label="Pin Code"
-              onChangeText={handleChange("postalCode")}
-              onBlur={handleBlur("postalCode")}
-              value={values.postalCode}
-              style={styles.input}
-              keyboardType="numeric"
-            />
+          {errors.city && <Text style={{ color: "red" }}>{errors.city}</Text>}
 
-            {touched.postalCode && errors.postalCode && (
-              <Text style={styles.errorText}>{errors.postalCode}</Text>
-            )}
+        </View>
 
-            <TextInput
-              label="Address"
-              onChangeText={handleChange("address")}
-              onBlur={handleBlur("address")}
-              value={values.address}
-              style={styles.textArea}
-              multiline
-              numberOfLines={4}
-            />
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontWeight: "bold" }}>Select State/UT*</Text>
+          <Picker
+            selectedValue={state}
+            onValueChange={(itemValue : any) => setState(itemValue)}
+            style={{
+              borderWidth: 1,
+              borderColor: errors.state ? "red" : "#ccc",
+              padding: 10,
+              borderRadius: 8,
+            }}
+          >
 
-            {touched.address && errors.address && (
-              <Text style={styles.errorText}>{errors.address}</Text>
-            )}
+            <Picker.Item label="Select State/UT" value="" />
+            <Picker.Item label="Karnataka" value="Karnataka" />
+            <Picker.Item label="Maharashtra" value="Maharashtra" />
+            </Picker>
+          {errors.state && <Text style={{ color: "red" }}>{errors.state}</Text>}
+        </View>
+      </View>
 
-            <Button
-              mode="contained"
-              onPress={handleSubmit as any}
-              style={styles.button}
-            >
-              Checkout Now
-            </Button>
-          </>
-        )}
-      </Formik>
+      {/* Phone */}
+      <Text style={{ fontWeight: "bold" }}>Phone*</Text>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          borderWidth: 1,
+          borderColor: errors.phone ? "red" : "#ccc",
+          borderRadius: 8,
+          marginVertical: 10,
+        }}
+      >
+        <Text style={{ padding: 10 }}>+91</Text>
+        <TextInput
+          placeholder="9579896842"
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+          style={{ flex: 1, padding: 10 }}
+        />
+      </View>
+      {errors.phone && <Text style={{ color: "red" }}>{errors.phone}</Text>}
+
+      {/* Email */}
+      <Text style={{ fontWeight: "bold" }}>Enter Your Email*</Text>
+      <TextInput
+        placeholder="youremail@example.com"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        style={{
+          borderWidth: 1,
+          borderColor: errors.email ? "red" : "#ccc",
+          padding: 10,
+          borderRadius: 8,
+          marginVertical: 10,
+        }}
+      />
+      {errors.email && <Text style={{ color: "red" }}>{errors.email}</Text>}
+
+      {/* Total Price and Submit Button */}
+      <View style={{ marginTop: 20 }}>
+        <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>
+          ₹4495
+        </Text>
+        <TouchableOpacity
+          onPress={handleSubmit}
+          style={{
+            backgroundColor: "#f3c3d0",
+            padding: 15,
+            borderRadius: 8,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ color: "white", fontWeight: "bold" }}>PAY NOW</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 };
 
-const styles = StyleSheet.create({
-
-    container: {
-    flex: 1,
-    padding: 20,
-  },
-
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    },
-
-    input: {
-    marginBottom: 10,
-    },
-
-    textArea: {
-    marginBottom: 10,
-    height: 100,
-    textAlignVertical: "top",
-    },
-    
-  errorText: {
-    fontSize: 14,
-    color: "red",
-    marginBottom: 10,
-    },
-  
-  button: {
-    marginTop: 20,
-    },
-  
-});
-
-export default BillingAddressForm;
+export default CheckoutScreen;

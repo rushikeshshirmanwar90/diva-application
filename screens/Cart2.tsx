@@ -8,7 +8,7 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
-import { AntDesign } from "@expo/vector-icons"; // Back icon
+import { AntDesign } from "@expo/vector-icons";
 
 interface CartItem {
   name: string;
@@ -102,16 +102,6 @@ const CartScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* Actions */}
-      <TouchableOpacity style={styles.actionButton}>
-        <Text>Apply Coupon</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.actionButton}>
-        <Text>Redeem GIVA Gift Card</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.actionButton}>
-        <Text>Pay using GIVA Cash (Available Balance: ₹0)</Text>
-      </TouchableOpacity>
 
       {/* Recommendations */}
       <Text style={styles.recommendationsHeader}>Must-haves</Text>
