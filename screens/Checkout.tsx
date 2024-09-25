@@ -7,7 +7,7 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons"; // For the back arrow icon
+import { MaterialIcons } from "@expo/vector-icons"; 
 import { Picker } from "@react-native-picker/picker";
 
 interface Errors {
@@ -46,6 +46,7 @@ const CheckoutScreen: React.FC = () => {
 
     // Pincode validation
     const pincodeRegex = /^[1-9][0-9]{5}$/;
+
     if (!pincode) {
       newErrors.pincode = "Pincode is required";
     } else if (!pincodeRegex.test(pincode)) {
@@ -59,7 +60,9 @@ const CheckoutScreen: React.FC = () => {
     if (!state) newErrors.state = "State is required";
 
     // Phone validation
+
     const phoneRegex = /^[6-9]\d{9}$/;
+
     if (!phone) {
       newErrors.phone = "Phone number is required";
     } else if (!phoneRegex.test(phone)) {
@@ -84,15 +87,13 @@ const CheckoutScreen: React.FC = () => {
   const handleSubmit = (): void => {
     if (validateForm()) {
       Alert.alert("Success", "Form submitted successfully");
-      // Handle form submission (e.g., send data to backend)
     } else {
       Alert.alert("Error", "Please correct the errors before submitting");
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 20, backgroundColor: "white" }}>
-
+    <ScrollView contentContainerStyle={{ backgroundColor: "white" }}>
       <View
         style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}
       >
@@ -112,6 +113,7 @@ const CheckoutScreen: React.FC = () => {
       </Text>
 
       <Text style={{ fontWeight: "bold" }}>Full Name*</Text>
+
       <TextInput
         placeholder="eg: John Doe"
         value={fullName}
@@ -124,11 +126,11 @@ const CheckoutScreen: React.FC = () => {
           marginVertical: 10,
         }}
       />
+
       {errors.fullName && (
         <Text style={{ color: "red" }}>{errors.fullName}</Text>
       )}
 
-      {/* Address Line 1 */}
       <Text style={{ fontWeight: "bold" }}>Address Line 1 (Street, Area)*</Text>
       <TextInput
         placeholder="eg: Street name"
@@ -146,7 +148,6 @@ const CheckoutScreen: React.FC = () => {
         <Text style={{ color: "red" }}>{errors.addressLine1}</Text>
       )}
 
-      {/* Address Line 2 */}
       <Text style={{ fontWeight: "bold" }}>
         Address Line 2 (House Number, Building)*
       </Text>
@@ -166,7 +167,6 @@ const CheckoutScreen: React.FC = () => {
         <Text style={{ color: "red" }}>{errors.addressLine2}</Text>
       )}
 
-      {/* Pincode */}
       <Text style={{ fontWeight: "bold" }}>Pincode*</Text>
       <TextInput
         placeholder="eg: 509001"
@@ -183,7 +183,6 @@ const CheckoutScreen: React.FC = () => {
       />
       {errors.pincode && <Text style={{ color: "red" }}>{errors.pincode}</Text>}
 
-      {/* City and State */}
       <View
         style={{
           flexDirection: "row",
@@ -192,9 +191,7 @@ const CheckoutScreen: React.FC = () => {
         }}
       >
         <View style={{ flex: 1, marginRight: 10 }}>
-
           <Text style={{ fontWeight: "bold" }}>Town/City*</Text>
-
           <TextInput
             placeholder="eg: Bengaluru"
             value={city}
@@ -209,14 +206,13 @@ const CheckoutScreen: React.FC = () => {
           />
 
           {errors.city && <Text style={{ color: "red" }}>{errors.city}</Text>}
-
         </View>
 
         <View style={{ flex: 1 }}>
           <Text style={{ fontWeight: "bold" }}>Select State/UT*</Text>
           <Picker
             selectedValue={state}
-            onValueChange={(itemValue : any) => setState(itemValue)}
+            onValueChange={(itemValue: any) => setState(itemValue)}
             style={{
               borderWidth: 1,
               borderColor: errors.state ? "red" : "#ccc",
@@ -224,11 +220,10 @@ const CheckoutScreen: React.FC = () => {
               borderRadius: 8,
             }}
           >
-
             <Picker.Item label="Select State/UT" value="" />
             <Picker.Item label="Karnataka" value="Karnataka" />
             <Picker.Item label="Maharashtra" value="Maharashtra" />
-            </Picker>
+          </Picker>
           {errors.state && <Text style={{ color: "red" }}>{errors.state}</Text>}
         </View>
       </View>
@@ -271,6 +266,7 @@ const CheckoutScreen: React.FC = () => {
           marginVertical: 10,
         }}
       />
+
       {errors.email && <Text style={{ color: "red" }}>{errors.email}</Text>}
 
       {/* Total Price and Submit Button */}
