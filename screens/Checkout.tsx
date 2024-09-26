@@ -7,8 +7,9 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons"; 
+import Icon from "@expo/vector-icons/Ionicons";
 import { Picker } from "@react-native-picker/picker";
+import PaymentOptions from "../components/PaymentMethod";
 
 interface Errors {
   fullName?: string;
@@ -94,190 +95,221 @@ const CheckoutScreen: React.FC = () => {
 
   return (
     <ScrollView contentContainerStyle={{ backgroundColor: "white" }}>
-      <View
-        style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}
-      >
-        <MaterialIcons name="arrow-back" size={24} color="black" />
-        <Text style={{ fontSize: 20, marginLeft: 10 }}>Checkout</Text>
-      </View>
-
-      <Text
-        style={{
-          fontSize: 16,
-          fontWeight: "bold",
-          marginBottom: 10,
-          color: "#f3c3d0",
-        }}
-      >
-        Shipping Address
-      </Text>
-
-      <Text style={{ fontWeight: "bold" }}>Full Name*</Text>
-
-      <TextInput
-        placeholder="eg: John Doe"
-        value={fullName}
-        onChangeText={setFullName}
-        style={{
-          borderWidth: 1,
-          borderColor: errors.fullName ? "red" : "#ccc",
-          padding: 10,
-          borderRadius: 8,
-          marginVertical: 10,
-        }}
-      />
-
-      {errors.fullName && (
-        <Text style={{ color: "red" }}>{errors.fullName}</Text>
-      )}
-
-      <Text style={{ fontWeight: "bold" }}>Address Line 1 (Street, Area)*</Text>
-      <TextInput
-        placeholder="eg: Street name"
-        value={addressLine1}
-        onChangeText={setAddressLine1}
-        style={{
-          borderWidth: 1,
-          borderColor: errors.addressLine1 ? "red" : "#ccc",
-          padding: 10,
-          borderRadius: 8,
-          marginVertical: 10,
-        }}
-      />
-      {errors.addressLine1 && (
-        <Text style={{ color: "red" }}>{errors.addressLine1}</Text>
-      )}
-
-      <Text style={{ fontWeight: "bold" }}>
-        Address Line 2 (House Number, Building)*
-      </Text>
-      <TextInput
-        placeholder="eg: House/Flat no"
-        value={addressLine2}
-        onChangeText={setAddressLine2}
-        style={{
-          borderWidth: 1,
-          borderColor: errors.addressLine2 ? "red" : "#ccc",
-          padding: 10,
-          borderRadius: 8,
-          marginVertical: 10,
-        }}
-      />
-      {errors.addressLine2 && (
-        <Text style={{ color: "red" }}>{errors.addressLine2}</Text>
-      )}
-
-      <Text style={{ fontWeight: "bold" }}>Pincode*</Text>
-      <TextInput
-        placeholder="eg: 509001"
-        value={pincode}
-        onChangeText={setPincode}
-        keyboardType="numeric"
-        style={{
-          borderWidth: 1,
-          borderColor: errors.pincode ? "red" : "#ccc",
-          padding: 10,
-          borderRadius: 8,
-          marginVertical: 10,
-        }}
-      />
-      {errors.pincode && <Text style={{ color: "red" }}>{errors.pincode}</Text>}
-
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          marginBottom: 10,
-        }}
-      >
-        <View style={{ flex: 1, marginRight: 10 }}>
-          <Text style={{ fontWeight: "bold" }}>Town/City*</Text>
-          <TextInput
-            placeholder="eg: Bengaluru"
-            value={city}
-            onChangeText={setCity}
+      <View>
+        <View>
+          <View
             style={{
-              borderWidth: 1,
-              borderColor: errors.city ? "red" : "#ccc",
+              backgroundColor: "#f57698",
               padding: 10,
-              borderRadius: 8,
-              marginVertical: 10,
-            }}
-          />
-
-          {errors.city && <Text style={{ color: "red" }}>{errors.city}</Text>}
-        </View>
-
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontWeight: "bold" }}>Select State/UT*</Text>
-          <Picker
-            selectedValue={state}
-            onValueChange={(itemValue: any) => setState(itemValue)}
-            style={{
-              borderWidth: 1,
-              borderColor: errors.state ? "red" : "#ccc",
-              padding: 10,
-              borderRadius: 8,
             }}
           >
-            <Picker.Item label="Select State/UT" value="" />
-            <Picker.Item label="Karnataka" value="Karnataka" />
-            <Picker.Item label="Maharashtra" value="Maharashtra" />
-          </Picker>
-          {errors.state && <Text style={{ color: "red" }}>{errors.state}</Text>}
+            <Text
+              style={{
+                fontSize: 17,
+                color: "#fff",
+                fontWeight: "bold",
+              }}
+            >
+              Shipping Address
+            </Text>
+          </View>
+
+          <View style={{ padding: 15 }}>
+            <Text style={{ fontWeight: "bold" }}>Full Name*</Text>
+
+            <TextInput
+              placeholder="eg: John Doe"
+              value={fullName}
+              onChangeText={setFullName}
+              style={{
+                borderWidth: 1,
+                borderColor: errors.fullName ? "red" : "#ccc",
+                padding: 10,
+                borderRadius: 8,
+                marginVertical: 10,
+              }}
+            />
+
+            {errors.fullName && (
+              <Text style={{ color: "red" }}>{errors.fullName}</Text>
+            )}
+
+            <Text style={{ fontWeight: "bold" }}>
+              Address Line 1 (Street, Area)*
+            </Text>
+            <TextInput
+              placeholder="eg: Street name"
+              value={addressLine1}
+              onChangeText={setAddressLine1}
+              style={{
+                borderWidth: 1,
+                borderColor: errors.addressLine1 ? "red" : "#ccc",
+                padding: 10,
+                borderRadius: 8,
+                marginVertical: 10,
+              }}
+            />
+            {errors.addressLine1 && (
+              <Text style={{ color: "red" }}>{errors.addressLine1}</Text>
+            )}
+
+            <Text style={{ fontWeight: "bold" }}>
+              Address Line 2 (House Number, Building)*
+            </Text>
+            <TextInput
+              placeholder="eg: House/Flat no"
+              value={addressLine2}
+              onChangeText={setAddressLine2}
+              style={{
+                borderWidth: 1,
+                borderColor: errors.addressLine2 ? "red" : "#ccc",
+                padding: 10,
+                borderRadius: 8,
+                marginVertical: 10,
+              }}
+            />
+            {errors.addressLine2 && (
+              <Text style={{ color: "red" }}>{errors.addressLine2}</Text>
+            )}
+
+            <Text style={{ fontWeight: "bold" }}>Pincode*</Text>
+            <TextInput
+              placeholder="eg: 509001"
+              value={pincode}
+              onChangeText={setPincode}
+              keyboardType="numeric"
+              style={{
+                borderWidth: 1,
+                borderColor: errors.pincode ? "red" : "#ccc",
+                padding: 10,
+                borderRadius: 8,
+                marginVertical: 10,
+              }}
+            />
+            {errors.pincode && (
+              <Text style={{ color: "red" }}>{errors.pincode}</Text>
+            )}
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginBottom: 10,
+              }}
+            >
+              <View style={{ flex: 1, marginRight: 10 }}>
+                <Text style={{ fontWeight: "bold" }}>Town/City*</Text>
+                <TextInput
+                  placeholder="eg: Bengaluru"
+                  value={city}
+                  onChangeText={setCity}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: errors.city ? "red" : "#ccc",
+                    padding: 10,
+                    borderRadius: 8,
+                    marginVertical: 10,
+                  }}
+                />
+
+                {errors.city && (
+                  <Text style={{ color: "red" }}>{errors.city}</Text>
+                )}
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontWeight: "bold" }}>Select State/UT*</Text>
+                <Picker
+                  selectedValue={state}
+                  onValueChange={(itemValue: any) => setState(itemValue)}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: errors.state ? "red" : "#ccc",
+                    padding: 10,
+                    borderRadius: 8,
+                  }}
+                >
+                  <Picker.Item label="Select State/UT" value="" />
+                  <Picker.Item label="Karnataka" value="Karnataka" />
+                  <Picker.Item label="Maharashtra" value="Maharashtra" />
+                </Picker>
+                {errors.state && (
+                  <Text style={{ color: "red" }}>{errors.state}</Text>
+                )}
+              </View>
+            </View>
+
+            {/* Phone */}
+            <Text style={{ fontWeight: "bold" }}>Phone*</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                borderWidth: 1,
+                borderColor: errors.phone ? "red" : "#ccc",
+                borderRadius: 8,
+                marginVertical: 10,
+              }}
+            >
+              <Text style={{ padding: 10 }}>+91</Text>
+              <TextInput
+                placeholder="9579896842"
+                value={phone}
+                onChangeText={setPhone}
+                keyboardType="phone-pad"
+                style={{ flex: 1, padding: 10 }}
+              />
+            </View>
+            {errors.phone && (
+              <Text style={{ color: "red" }}>{errors.phone}</Text>
+            )}
+
+            {/* Email */}
+            <Text style={{ fontWeight: "bold" }}>Enter Your Email*</Text>
+            <TextInput
+              placeholder="youremail@example.com"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              style={{
+                borderWidth: 1,
+                borderColor: errors.email ? "red" : "#ccc",
+                padding: 10,
+                borderRadius: 8,
+                marginVertical: 10,
+              }}
+            />
+
+            {errors.email && (
+              <Text style={{ color: "red" }}>{errors.email}</Text>
+            )}
+          </View>
+        </View>
+
+        <View style={{ backgroundColor: "#f57698", padding: 10 }}>
+          <Text style={{ fontSize: 17, color: "#fff", fontWeight: "bold" }}>
+            Payment Method
+          </Text>
+        </View>
+
+        <View style={{ padding: 15 }}>
+          <View>
+            <PaymentOptions />
+          </View>
         </View>
       </View>
 
-      {/* Phone */}
-      <Text style={{ fontWeight: "bold" }}>Phone*</Text>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          borderWidth: 1,
-          borderColor: errors.phone ? "red" : "#ccc",
-          borderRadius: 8,
-          marginVertical: 10,
-        }}
-      >
-        <Text style={{ padding: 10 }}>+91</Text>
-        <TextInput
-          placeholder="9579896842"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-          style={{ flex: 1, padding: 10 }}
-        />
-      </View>
-      {errors.phone && <Text style={{ color: "red" }}>{errors.phone}</Text>}
-
-      {/* Email */}
-      <Text style={{ fontWeight: "bold" }}>Enter Your Email*</Text>
-      <TextInput
-        placeholder="youremail@example.com"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        style={{
-          borderWidth: 1,
-          borderColor: errors.email ? "red" : "#ccc",
-          padding: 10,
-          borderRadius: 8,
-          marginVertical: 10,
-        }}
-      />
-
-      {errors.email && <Text style={{ color: "red" }}>{errors.email}</Text>}
-
       {/* Total Price and Submit Button */}
+
       <View style={{ marginTop: 20 }}>
         <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>
           ₹4495
         </Text>
+
         <TouchableOpacity
           onPress={handleSubmit}
           style={{
-            backgroundColor: "#f3c3d0",
+            backgroundColor: "#fa4374",
             padding: 15,
             borderRadius: 8,
             alignItems: "center",
