@@ -10,6 +10,7 @@ import {
 import Icon from "@expo/vector-icons/Ionicons";
 import { Picker } from "@react-native-picker/picker";
 import PaymentOptions from "../components/PaymentMethod";
+import PaymentButton from "../components/PayNow";
 
 interface Errors {
   fullName?: string;
@@ -302,21 +303,7 @@ const CheckoutScreen: React.FC = () => {
       {/* Total Price and Submit Button */}
 
       <View style={{ marginTop: 20 }}>
-        <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>
-          ₹4495
-        </Text>
-
-        <TouchableOpacity
-          onPress={handleSubmit}
-          style={{
-            backgroundColor: "#fa4374",
-            padding: 15,
-            borderRadius: 8,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ color: "white", fontWeight: "bold" }}>PAY NOW</Text>
-        </TouchableOpacity>
+        <PaymentButton />
       </View>
     </ScrollView>
   );
