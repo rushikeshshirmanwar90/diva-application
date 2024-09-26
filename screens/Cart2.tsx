@@ -8,7 +8,6 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
-import { AntDesign } from "@expo/vector-icons";
 
 interface CartItem {
   name: string;
@@ -34,7 +33,8 @@ const CartScreen: React.FC = () => {
     price: 899,
     originalPrice: 1599,
     quantity: 2,
-    imageUrl: "your_image_url_here",
+    imageUrl:
+      "https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727034644/stock_img_12_90cd962f05.jpg",
     stockLeft: 4,
   };
 
@@ -45,7 +45,8 @@ const CartScreen: React.FC = () => {
       rating: 5.0,
       price: 499,
       originalPrice: 999,
-      imageUrl: "your_image_url_here",
+      imageUrl:
+        "https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727378092/stock_img_11_5349fd3880.jpg",
     },
     {
       id: 2,
@@ -53,14 +54,19 @@ const CartScreen: React.FC = () => {
       rating: 4.9,
       price: 499,
       originalPrice: 899,
-      imageUrl: "your_image_url_here",
+      imageUrl:
+        "https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727378182/stock_img_7_00f33603db.jpg",
     },
-    // Add more recommended products
   ];
 
   const renderItem = ({ item }: { item: Recommendation }) => (
     <View style={styles.recommendationItem}>
-      <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
+      <Image
+        source={{
+          uri: `https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727378182/stock_img_7_00f33603db.jpg`,
+        }}
+        style={styles.productImage}
+      />
       <Text style={styles.productName}>{item.name}</Text>
       <Text style={styles.productRating}>⭐ {item.rating}</Text>
       <Text style={styles.productPrice}>
@@ -72,19 +78,10 @@ const CartScreen: React.FC = () => {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <AntDesign name="arrowleft" size={24} color="black" />
-        <Text style={styles.headerText}>Cart</Text>
-      </View>
-
       {/* Cart Item */}
       <View style={styles.cartItem}>
         <Image source={{ uri: cartItem.imageUrl }} style={styles.cartImage} />
         <View style={styles.cartDetails}>
-          <Text style={styles.stockText}>
-            Hurry Up! Only {cartItem.stockLeft} Item(s) left in stock
-          </Text>
           <Text style={styles.itemName}>{cartItem.name}</Text>
           <Text style={styles.itemPrice}>
             ₹{cartItem.price}{" "}
@@ -102,17 +99,31 @@ const CartScreen: React.FC = () => {
         </View>
       </View>
 
-
       {/* Recommendations */}
       <Text style={styles.recommendationsHeader}>Must-haves</Text>
-      <FlatList
+      {/* <FlatList
         horizontal
         data={recommendations}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
         showsHorizontalScrollIndicator={false}
         style={styles.recommendationsList}
-      />
+      /> */}
+
+      <View style={styles.recommendationItem}>
+        <Image
+          source={{
+            uri: `https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727378182/stock_img_7_00f33603db.jpg`,
+          }}
+          style={styles.productImage}
+        />
+        <Text style={styles.productName}>Tropical Blossom Scented Candle</Text>
+        <Text style={styles.productRating}>⭐ 5</Text>
+        <Text style={styles.productPrice}>
+          ₹1798
+          <Text style={styles.strikethrough}>MRP ₹2000</Text>
+        </Text>
+      </View>
 
       {/* Bottom Checkout */}
       <View style={styles.bottomSection}>
@@ -146,8 +157,8 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   cartImage: {
-    width: 80,
-    height: 80,
+    width: 120,
+    height: 120,
     borderRadius: 8,
   },
   cartDetails: {
@@ -203,7 +214,7 @@ const styles = StyleSheet.create({
     width: 120,
   },
   productImage: {
-    width: "100%",
+    width: 100,
     height: 100,
     borderRadius: 8,
   },

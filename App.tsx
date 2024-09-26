@@ -1,6 +1,6 @@
 import React from "react";
 import * as Font from "expo-font";
-import {  Text, StyleSheet } from "react-native";
+import { Text, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Navigator from "./components/Navigation/Navigator";
 

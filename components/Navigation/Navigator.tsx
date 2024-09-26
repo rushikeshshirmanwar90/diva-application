@@ -16,12 +16,17 @@ const Navigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
+        <Stack.Screen
+          name="DIVA"
+          component={Home}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen name="My Cart" component={CartScreen} />
         <Stack.Screen name="Checkout" component={Checkout} />
-        <Stack.Screen name="Cart2" component={CartScreen} />
-        <Stack.Screen name="Cart" component={Cart} />
         <Stack.Screen name="User Address" component={AddressForm} />
         <Stack.Screen name="Category Detail" component={CategoryDetail} />
-        <Stack.Screen name="DIVA" component={Home} />
         <Stack.Screen name="Details" component={Details} />
       </Stack.Navigator>
     </NavigationContainer>
