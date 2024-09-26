@@ -292,7 +292,7 @@ const CheckoutScreen: React.FC = () => {
           </Text>
         </View>
 
-        <View style={{ padding: 15 }}>
+        <View style={{ padding: 1 }}>
           <View>
             <PaymentOptions />
           </View>

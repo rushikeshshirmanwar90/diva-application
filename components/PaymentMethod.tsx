@@ -8,9 +8,6 @@ const PaymentOptions = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Payments</Text>
-
-      {/* Payment Option 1 */}
       <TouchableOpacity
         style={styles.optionContainer}
         onPress={() => setSelectedPayment("cards")}
