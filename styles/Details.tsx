@@ -3,12 +3,9 @@ import { StyleSheet, Dimensions } from "react-native";
 const { width } = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
-
   container: {
     flexGrow: 1,
-    padding: 16,
     backgroundColor: "#fff",
-    position: "relative",
   },
 
   swiperContainer: {
@@ -96,14 +93,12 @@ export const styles = StyleSheet.create({
     paddingVertical: 12,
     width: width - 20,
     borderRadius: 8,
-    bottom: 10,
     alignItems: "center",
   },
 
   cartButtonText: {
-    color: "#fff",
+    color: "white",
     fontSize: 16,
     fontWeight: "bold",
   },
-
 });

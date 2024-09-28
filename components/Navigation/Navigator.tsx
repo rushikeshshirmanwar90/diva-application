@@ -23,11 +23,11 @@ const Navigator = () => {
             headerShown: false,
           }}
         />
+        <Stack.Screen name="Details" component={Details} />
         <Stack.Screen name="My Cart" component={CartScreen} />
         <Stack.Screen name="Checkout" component={Checkout} />
         <Stack.Screen name="User Address" component={AddressForm} />
         <Stack.Screen name="Category Detail" component={CategoryDetail} />
-        <Stack.Screen name="Details" component={Details} />
       </Stack.Navigator>
     </NavigationContainer>
   );

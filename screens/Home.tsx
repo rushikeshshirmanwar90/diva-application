@@ -52,7 +52,6 @@ const Home = () => {
         setWomenProduct(womenProduct);
         setMenProduct(menProduct);
         setIsProductLoaded(true);
-
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -188,7 +187,6 @@ const Home = () => {
           <CategorySection product={menProduct} />
         </ScrollView>
       </View>
-
     </ScrollView>
   );
 };
