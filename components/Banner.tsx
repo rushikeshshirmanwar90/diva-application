@@ -10,12 +10,11 @@ import {
 } from "react-native";
 import { domain } from "./route/route";
 import { BannerProps } from "../interface/banner";
-import SliderBox from "react-native-image-slider-box";
 
 const { width } = Dimensions.get("window");
 
 const Banner = () => {
-  const [banner, setBanner] = useState<String[]>([]);
+  const [banner, setBanner] = useState<BannerProps[]>([]);
   const [bannerLoading, setBannerLoading] = useState<boolean>(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
@@ -25,21 +24,11 @@ const Banner = () => {
       try {
         const res = await fetch(`${domain}/api/home-banners?populate=*`);
         const data = await res.json();
-
-        // Sort banners based on priority
         const sortedBanners = data.data.sort(
           (a: BannerProps, b: BannerProps) =>
             b.attributes.priority - a.attributes.priority
         );
-
-        // Map through sorted banners and extract the URL
-        const bannerUrls = sortedBanners.map(
-          (banner: BannerProps) => banner.attributes.banner.data.attributes.url
-        );
-
-        setBanner(bannerUrls); // Store the URLs in the array
-        console.log(bannerUrls); // Log the URLs array
-
+        setBanner(sortedBanners);
         setBannerLoading(false);
       } catch (error) {
         console.error("Error fetching banners:", error);
@@ -58,7 +47,7 @@ const Banner = () => {
         setCurrentIndex(nextIndex);
         flatListRef.current.scrollToIndex({ index: nextIndex });
       }
-    }, 5000); // 5 seconds delay
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [currentIndex, banner.length]);
@@ -72,41 +61,45 @@ const Banner = () => {
   }
 
   return (
+
     <View style={styles.container}>
-      <SliderBox
-        ImageComponent={banner}
-        sliderBoxHeight={200}
-        onCurrentImagePressed={(index: any) =>
-          console.warn(`image ${index} pressed`)
-        }
-        dotColor="#FFEE58"
-        inactiveDotColor="#90A4AE"
-        paginationBoxVerticalPadding={20}
-        autoplay
-        circleLoop
-        resizeMethod={"resize"}
-        resizeMode={"cover"}
-        paginationBoxStyle={{
-          position: "absolute",
-          bottom: 0,
-          padding: 0,
-          alignItems: "center",
-          alignSelf: "center",
-          justifyContent: "center",
-          paddingVertical: 10,
+      <FlatList
+        data={banner}
+        horizontal
+        pagingEnabled
+        ref={flatListRef}
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={(event) => {
+          const index = Math.floor(event.nativeEvent.contentOffset.x / width);
+          setCurrentIndex(index);
         }}
-        dotStyle={{
-          width: 10,
-          height: 10,
-          borderRadius: 5,
-          marginHorizontal: 0,
-          padding: 0,
-          margin: 0,
-          backgroundColor: "rgba(128, 128, 128, 0.92)",
-        }}
-        ImageComponentStyle={{ borderRadius: 15, width: "97%", marginTop: 5 }}
-        imageLoadingColor="#2196F3"
+        renderItem={({ item }) => (
+          <View style={styles.slide}>
+            <Image
+              source={{ uri: item.attributes.banner.data.attributes.url }}
+              style={styles.bannerImage}
+              resizeMode="cover"
+            />
+          </View>
+        )}
+        keyExtractor={(item, index) => index.toString()}
       />
+
+      <View style={styles.pagination}>
+        {banner.map((_, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[
+              styles.dot,
+              currentIndex === index ? styles.activeDot : styles.inactiveDot,
+            ]}
+            onPress={() => {
+              setCurrentIndex(index);
+              flatListRef.current?.scrollToIndex({ index });
+            }}
+          />
+        ))}
+      </View>
     </View>
   );
 };

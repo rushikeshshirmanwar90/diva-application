@@ -4,7 +4,8 @@ import ProductCard from "./utils/ProductCard";
 import { domain } from "./route/route";
 import { Product } from "../interface/Product";
 
-const CategorySection: React.FC<{ product?: Product[] }> = ({ product }) => {
+const CategorySection: React.FC<{ product?: any[] }> = () => {
+
   const [productData, setProductData] = useState<Product[]>([]);
   const [productLoading, setProductLoading] = useState<boolean>(true);
 
@@ -26,7 +27,6 @@ const CategorySection: React.FC<{ product?: Product[] }> = ({ product }) => {
     fetchProductData();
   }, []);
 
-  // Check if productData is populated before rendering ProductCards
   if (productLoading) {
     return <Text>Loading...</Text>;
   }

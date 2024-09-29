@@ -153,11 +153,14 @@ const Home = () => {
         <Banners />
       </View>
 
-      {/*=========================
-            Best Selling for Womens
-      ======================== */}
+      {/*
+        =========================
+          Best Selling for Womens
+        ======================== 
+      */}
 
       <View>
+
         <View style={utilsStyles.titleContainer}>
           <Text style={utilsStyles.title}>Best Selling</Text>
           <View style={utilsStyles.dot}></View>
@@ -187,6 +190,7 @@ const Home = () => {
           <CategorySection product={menProduct} />
         </ScrollView>
       </View>
+
     </ScrollView>
   );
 };

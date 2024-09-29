@@ -4,7 +4,6 @@ import {
   Text,
   Image,
   TouchableOpacity,
-  Dimensions,
   ScrollView,
 } from "react-native";
 
@@ -16,18 +15,23 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 
 // importing styles
 import { styles } from "../styles/Details";
-
-const { width } = Dimensions.get("window");
+import CategorySection from "../components/CategorySection";
+import { utilsStyles } from "../styles/utils";
 
 const Details = () => {
+
   const images = [
+
     "https://diva-images.blr1.digitaloceanspaces.com/df81e5514b5b3e97aa7bdabcf4ff7b2d.jpg",
     "https://diva-images.blr1.digitaloceanspaces.com/c3ed3aeb2cd9515167caa69f08bf6e14.jpg",
     "https://divatheindianjewel.com/_next/image?url=https%3A%2F%2Fdiva-images.blr1.digitaloceanspaces.com%2Faa8286b18036ef8915fd72e83b1049ec.jpg&w=256&q=75",
+
   ];
 
   return (
+
     <ScrollView contentContainerStyle={styles.container}>
+
       <View style={{ padding: 16 }}>
         <View style={styles.swiperContainer}>
           <SwiperFlatList
@@ -87,26 +91,30 @@ const Details = () => {
               <Text style={styles.cartButtonText}>Add To Cart</Text>
             </TouchableOpacity>
           </View>
+
         </View>
       </View>
+
       <View
         style={{
-          marginTop: -5,
-          marginBottom :15,
-          backgroundColor: "#f57698",
-          padding: 10,
+          marginTop: -25,
+          padding: 15,
         }}
       >
-        <Text
-          style={{
-            fontSize: 17,
-            color: "#fff",
-            fontWeight: "bold",
-          }}
-        >
-          Similar Jewellers You May Like
-        </Text>
+
+        <View style={{ marginTop: 20 }}>
+          <View style={utilsStyles.titleContainer}>
+            <Text style={utilsStyles.title}>Similar Products</Text>
+            <View style={utilsStyles.dot}></View>
+          </View>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <CategorySection />
+          </ScrollView>
+
+        </View> 
       </View>
+
     </ScrollView>
   );
 };

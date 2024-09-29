@@ -5,10 +5,24 @@ declare module "react-native-image-slider-box" {
   import { ImageSourcePropType } from "react-native";
 
   interface SliderBoxProps {
-    images?: Array<string | number>;
+    images?: Array<string | number | ImageSourcePropType>;
     currentImageEmitter?: (index: number) => void;
-    // Add any other props you might need
+    autoplay?: boolean;
+    circleLoop?: boolean;
+    resizeMethod?: "resize" | "cover" | "contain";
+    resizeMode?: "cover" | "contain" | "stretch" | "center";
+    dotColor?: string;
+    inactiveDotColor?: string;
+    paginationBoxVerticalPadding?: number;
+    paginationBoxStyle?: object;
+    dotStyle?: object;
+    onCurrentImagePressed?: (index: number) => void;
   }
 
-  export class SliderBox extends React.Component<SliderBoxProps> {}
+  declare const SliderBox: React.ComponentClass<SliderBoxProps> & {
+    ImageComponent?: React.ComponentType<any>;
+    ImageComponentStyle?: object;
+  };
+
+  export default SliderBox;
 }

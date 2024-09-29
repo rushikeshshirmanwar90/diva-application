@@ -1,11 +1,8 @@
 import { StyleSheet, View, Image } from "react-native";
 import CategoryBar from "../components/FilterButton";
 import ProductList from "../components/Products";
-
-// images 
-
-
 import React from "react";
+
 
 const CategoryDetail = () => {
   return (
@@ -25,11 +22,9 @@ const CategoryDetail = () => {
           }}
         />
       </View>
-
       <View style={{ marginVertical: 5 }}>
         <CategoryBar />
       </View>
-
       <View>
         <ProductList />
       </View>
