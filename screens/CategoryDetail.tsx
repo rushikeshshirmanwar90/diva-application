@@ -3,7 +3,6 @@ import CategoryBar from "../components/FilterButton";
 import ProductList from "../components/Products";
 import React from "react";
 
-
 const CategoryDetail = () => {
   return (
     <View

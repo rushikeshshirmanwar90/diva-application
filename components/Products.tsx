@@ -23,7 +23,7 @@ const products: Product[] = [
     price: 850,
     originalPrice: 1600,
     imageUrl:
-"https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727034644/stock_img_12_90cd962f05.jpg",
+      "https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727034644/stock_img_12_90cd962f05.jpg",
   },
   {
     id: "2",
@@ -31,7 +31,7 @@ const products: Product[] = [
     price: 850,
     originalPrice: 1600,
     imageUrl:
-"https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727034643/stock_img_14_19402cf720.jpg",
+      "https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727034643/stock_img_14_19402cf720.jpg",
   },
 ];
 

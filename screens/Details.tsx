@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 
 // importing swiper Library
 import SwiperFlatList from "react-native-swiper-flatlist";
@@ -17,21 +11,18 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { styles } from "../styles/Details";
 import CategorySection from "../components/CategorySection";
 import { utilsStyles } from "../styles/utils";
+import ReviewModal from "../components/Mode";
+import ReviewCard from "../components/ReviewCard";
 
 const Details = () => {
-
   const images = [
-
     "https://diva-images.blr1.digitaloceanspaces.com/df81e5514b5b3e97aa7bdabcf4ff7b2d.jpg",
     "https://diva-images.blr1.digitaloceanspaces.com/c3ed3aeb2cd9515167caa69f08bf6e14.jpg",
     "https://divatheindianjewel.com/_next/image?url=https%3A%2F%2Fdiva-images.blr1.digitaloceanspaces.com%2Faa8286b18036ef8915fd72e83b1049ec.jpg&w=256&q=75",
-
   ];
 
   return (
-
     <ScrollView contentContainerStyle={styles.container}>
-
       <View style={{ padding: 16 }}>
         <View style={styles.swiperContainer}>
           <SwiperFlatList
@@ -91,7 +82,6 @@ const Details = () => {
               <Text style={styles.cartButtonText}>Add To Cart</Text>
             </TouchableOpacity>
           </View>
-
         </View>
       </View>
 
@@ -101,7 +91,6 @@ const Details = () => {
           padding: 15,
         }}
       >
-
         <View style={{ marginTop: 20 }}>
           <View style={utilsStyles.titleContainer}>
             <Text style={utilsStyles.title}>Similar Products</Text>
@@ -111,10 +100,13 @@ const Details = () => {
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <CategorySection />
           </ScrollView>
+        </View>
 
-        </View> 
+        <View>
+          <ReviewModal />
+          <ReviewCard />
+        </View>
       </View>
-
     </ScrollView>
   );
 };
