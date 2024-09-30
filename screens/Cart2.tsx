@@ -41,7 +41,7 @@ const CartScreen: React.FC = () => {
   const recommendations: Recommendation[] = [
     {
       id: 1,
-      name: "Tropical Blossom Scented Candle",
+      name: "Tropical Blossom ",
       rating: 5.0,
       price: 499,
       originalPrice: 999,
@@ -59,115 +59,110 @@ const CartScreen: React.FC = () => {
     },
   ];
 
-  const renderItem = ({ item }: { item: Recommendation }) => (
-    <View style={styles.recommendationItem}>
-      <Image
-        source={{
-          uri: `https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727378182/stock_img_7_00f33603db.jpg`,
-        }}
-        style={styles.productImage}
-      />
-      <Text style={styles.productName}>{item.name}</Text>
-      <Text style={styles.productRating}>⭐ {item.rating}</Text>
-      <Text style={styles.productPrice}>
-        ₹{item.price}{" "}
-        <Text style={styles.strikethrough}>MRP ₹{item.originalPrice}</Text>
-      </Text>
-    </View>
-  );
+  const renderItem = ({ item }: { item: Recommendation }) => {
+    // Truncate the product name to 2 words if needed
+    const truncateName = (name: string) => {
+      const words = name.split(" ");
+      if (words.length > 2) {
+        return `${words.slice(0, 2).join(" ")}...`;
+      }
+      return name;
+    };
 
-  return (
-    <ScrollView style={styles.container}>
-      {/* Cart Item */}
-      <View style={styles.cartItem}>
-        <Image source={{ uri: cartItem.imageUrl }} style={styles.cartImage} />
-        <View style={styles.cartDetails}>
-          <Text style={styles.itemName}>{cartItem.name}</Text>
-          <Text style={styles.itemPrice}>
-            ₹{cartItem.price}{" "}
-            <Text style={styles.strikethrough}>₹{cartItem.originalPrice}</Text>
-          </Text>
-          <View style={styles.quantitySelector}>
-            <TouchableOpacity>
-              <Text style={styles.quantityButton}>-</Text>
-            </TouchableOpacity>
-            <Text style={styles.quantityText}>{cartItem.quantity}</Text>
-            <TouchableOpacity>
-              <Text style={styles.quantityButton}>+</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
-      {/* Recommendations */}
-      <Text style={styles.recommendationsHeader}>Must-haves</Text>
-      {/* <FlatList
-        horizontal
-        data={recommendations}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        showsHorizontalScrollIndicator={false}
-        style={styles.recommendationsList}
-      /> */}
-
+    return (
       <View style={styles.recommendationItem}>
         <Image
           source={{
-            uri: `https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727378182/stock_img_7_00f33603db.jpg`,
+            uri: item.imageUrl,
           }}
           style={styles.productImage}
         />
-        <Text style={styles.productName}>Tropical Blossom Scented Candle</Text>
-        <Text style={styles.productRating}>⭐ 5</Text>
+        <Text style={styles.productName}>{truncateName(item.name)}</Text>
+        <Text style={styles.productRating}>⭐ {item.rating}</Text>
         <Text style={styles.productPrice}>
-          ₹1798
-          <Text style={styles.strikethrough}>MRP ₹2000</Text>
+          ₹{item.price}{" "}
+          <Text style={styles.strikethrough}>MRP ₹{item.originalPrice}</Text>
         </Text>
-      </View>
 
-      {/* Bottom Checkout */}
+        {/* View Product Button */}
+        <TouchableOpacity style={styles.viewProductButton}>
+          <Text style={styles.viewProductButtonText}>View Product</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <ScrollView style={styles.scrollContainer}>
+        {/* Cart Item */}
+        <View style={styles.cartItem}>
+          <Image source={{ uri: cartItem.imageUrl }} style={styles.cartImage} />
+          <View style={styles.cartDetails}>
+            <Text style={styles.itemName}>{cartItem.name}</Text>
+            <Text style={styles.itemPrice}>
+              ₹{cartItem.price}{" "}
+              <Text style={styles.strikethrough}>
+                ₹{cartItem.originalPrice}
+              </Text>
+            </Text>
+            <View style={styles.quantitySelector}>
+              <TouchableOpacity>
+                <Text style={styles.quantityButton}>-</Text>
+              </TouchableOpacity>
+              <Text style={styles.quantityText}>{cartItem.quantity}</Text>
+              <TouchableOpacity>
+                <Text style={styles.quantityButton}>+</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* Recommendations */}
+        <Text style={styles.recommendationsHeader}>Must-haves</Text>
+        <FlatList
+          horizontal
+          data={recommendations}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          showsHorizontalScrollIndicator={false}
+          style={styles.recommendationsList}
+        />
+      </ScrollView>
+
+      {/* Bottom Checkout - Sticky at the Bottom */}
       <View style={styles.bottomSection}>
         <Text style={styles.totalAmount}>₹1798</Text>
         <TouchableOpacity style={styles.checkoutButton}>
           <Text style={styles.checkoutButtonText}>CHECKOUT SECURELY</Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
     backgroundColor: "#fff",
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 16,
-  },
-  headerText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginLeft: 16,
+  scrollContainer: {
+    flexGrow: 1,
+    paddingHorizontal: 16,
+    paddingBottom: 100, // Added to give space for the sticky footer
   },
   cartItem: {
     flexDirection: "row",
     marginVertical: 16,
   },
   cartImage: {
-    width: 120,
-    height: 120,
+    width: 150,
+    height: 150,
     borderRadius: 8,
   },
   cartDetails: {
     flex: 1,
     marginLeft: 16,
-  },
-  stockText: {
-    color: "red",
-    fontWeight: "bold",
   },
   itemName: {
     fontSize: 16,
@@ -194,13 +189,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginHorizontal: 8,
   },
-  actionButton: {
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    marginVertical: 8,
-  },
   recommendationsHeader: {
     fontSize: 18,
     fontWeight: "bold",
@@ -211,30 +199,38 @@ const styles = StyleSheet.create({
   },
   recommendationItem: {
     marginRight: 16,
-    width: 120,
+    width: 180,
   },
   productImage: {
-    width: 100,
-    height: 100,
+    width: 150,
+    height: 140,
     borderRadius: 8,
   },
   productName: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "bold",
   },
   productRating: {
-    fontSize: 12,
+    fontSize: 14,
     color: "#888",
   },
   productPrice: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#000",
   },
   bottomSection: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderTopWidth: 1,
+    borderColor: "#ddd",
   },
   totalAmount: {
     fontSize: 18,
@@ -248,6 +244,20 @@ const styles = StyleSheet.create({
   },
   checkoutButtonText: {
     color: "#fff",
+    fontWeight: "bold",
+  },
+  viewProductButton: {
+    borderColor: "black",
+    borderWidth: 2,
+    borderRadius: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    alignItems: "center",
+    marginTop: 8,
+  },
+  viewProductButtonText: {
+    fontSize: 14,
+    color: "#111",
     fontWeight: "bold",
   },
 });

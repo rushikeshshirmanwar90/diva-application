@@ -14,12 +14,10 @@ const Stack = createNativeStackNavigator();
 const Navigator = () => {
   return (
     <NavigationContainer>
-
       <Stack.Navigator>
-
-        <Stack.Screen name="My Cart" component={CartScreen} />
         <Stack.Screen name="Details" component={Details} />
         <Stack.Screen name="Category Detail" component={CategoryDetail} />
+        <Stack.Screen name="My Cart" component={CartScreen} />
         <Stack.Screen
           name="DIVA"
           component={Home}
@@ -29,9 +27,7 @@ const Navigator = () => {
         />
         <Stack.Screen name="Checkout" component={Checkout} />
         <Stack.Screen name="User Address" component={AddressForm} />
-
       </Stack.Navigator>
-
     </NavigationContainer>
   );
 };

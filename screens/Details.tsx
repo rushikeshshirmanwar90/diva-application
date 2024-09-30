@@ -1,13 +1,14 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
-
-// importing swiper Library
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+} from "react-native";
 import SwiperFlatList from "react-native-swiper-flatlist";
-
-// importing Icons
 import Icon from "react-native-vector-icons/MaterialIcons";
-
-// importing styles
 import { styles } from "../styles/Details";
 import CategorySection from "../components/CategorySection";
 import { utilsStyles } from "../styles/utils";
@@ -22,92 +23,91 @@ const Details = () => {
   ];
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={{ padding: 16 }}>
-        <View style={styles.swiperContainer}>
-          <SwiperFlatList
-            autoplay
-            autoplayDelay={5}
-            autoplayLoop
-            index={0}
-            data={images}
-            renderItem={({ item }) => (
-              <View style={styles.slide}>
-                <Image
-                  source={{ uri: item }}
-                  style={styles.bannerImage}
-                  resizeMode="cover"
-                />
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        {/* Extra padding for scrollable content */}
+        <View style={{ padding: 16 }}>
+          <View style={styles.swiperContainer}>
+            <SwiperFlatList
+              autoplay
+              autoplayDelay={5}
+              autoplayLoop
+              index={0}
+              data={images}
+              renderItem={({ item }) => (
+                <View style={styles.slide}>
+                  <Image
+                    source={{ uri: item }}
+                    style={styles.bannerImage}
+                    resizeMode="cover"
+                  />
+                </View>
+              )}
+            />
+          </View>
+
+          {/* Product Details */}
+          <View style={styles.productContainer}>
+            <Text style={styles.title}>Diva The Indian Jewel</Text>
+            <Text style={styles.productTitle}>
+              Sterling Silver Bracelet for Women
+            </Text>
+
+            <View style={styles.priceContainer}>
+              <Text style={styles.price}>₹1400</Text>
+              <Text style={styles.mrp}>MRP ₹2000</Text>
+            </View>
+
+            <View style={styles.ratingContainer}>
+              <Text style={styles.rating}>0 </Text>
+              <Icon name="star" size={14} color="#FFD700" />
+              <Text style={styles.rating}> (0 reviews)</Text>
+            </View>
+
+            <View style={styles.infoContainer}>
+              <View style={styles.infoRow}>
+                <Icon name="autorenew" size={30} color="#333" />
+                <Text style={styles.infoText}>15 Days Return Policy</Text>
               </View>
-            )}
-          />
+
+              <View style={styles.infoRow}>
+                <Icon name="verified-user" size={30} color="#333" />
+                <Text style={styles.infoText}>6 Months Warranty</Text>
+              </View>
+
+              <View style={styles.infoRow}>
+                <Text style={styles.infoText}>No Description</Text>
+              </View>
+            </View>
+          </View>
         </View>
 
-        {/* Product Details */}
-        <View style={styles.productContainer}>
-          <Text style={styles.title}>Diva The Indian Jewel</Text>
-          <Text style={styles.productTitle}>
-            sterling silver bracelet for women's
-          </Text>
-
-          <View style={styles.priceContainer}>
-            <Text style={styles.price}>₹1400</Text>
-            <Text style={styles.mrp}>MRP ₹2000</Text>
-          </View>
-
-          <View style={styles.ratingContainer}>
-            <Text style={styles.rating}>0 </Text>
-            <Icon name="star" size={14} color="#FFD700" />
-            <Text style={styles.rating}> (0 reviews)</Text>
-          </View>
-
-          <View style={styles.infoContainer}>
-            <View style={styles.infoRow}>
-              <Icon name="autorenew" size={30} color="#333" />
-              <Text style={styles.infoText}>15 Days Return Policy</Text>
+        <View style={{ marginTop: -25, padding: 15 }}>
+          <View style={{ marginTop: 20 }}>
+            <View style={utilsStyles.titleContainer}>
+              <Text style={utilsStyles.title}>Similar Products</Text>
+              <View style={utilsStyles.dot}></View>
             </View>
 
-            <View style={styles.infoRow}>
-              <Icon name="verified-user" size={30} color="#333" />
-              <Text style={styles.infoText}>6 Months Warranty</Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Text style={styles.infoText}>No Description</Text>
-            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <CategorySection />
+            </ScrollView>
           </View>
 
           <View>
-            <TouchableOpacity style={styles.cartButton}>
-              <Text style={styles.cartButtonText}>Add To Cart</Text>
-            </TouchableOpacity>
+            <ReviewModal />
+            <ReviewCard />
           </View>
         </View>
+      </ScrollView>
+
+      {/* Sticky Add To Cart Button */}
+      <View style={styles.stickyCartButtonContainer}>
+        <TouchableOpacity style={styles.cartButton}>
+          <Text style={styles.cartButtonText}>Add To Cart</Text>
+        </TouchableOpacity>
       </View>
-
-      <View
-        style={{
-          marginTop: -25,
-          padding: 15,
-        }}
-      >
-        <View style={{ marginTop: 20 }}>
-          <View style={utilsStyles.titleContainer}>
-            <Text style={utilsStyles.title}>Similar Products</Text>
-            <View style={utilsStyles.dot}></View>
-          </View>
-
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <CategorySection />
-          </ScrollView>
-        </View>
-
-        <View>
-          <ReviewModal />
-          <ReviewCard />
-        </View>
-      </View>
-    </ScrollView>
+    </View>
   );
 };
 
