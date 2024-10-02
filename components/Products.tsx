@@ -7,60 +7,19 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
+import ProductCard from "./utils/ProductCard";
+import { Product } from "../interface/Product";
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  originalPrice: number;
-  imageUrl: string;
-}
-
-const products: Product[] = [
-  {
-    id: "1",
-    name: "Sterling Silver Toe Ring (बिछवा)",
-    price: 850,
-    originalPrice: 1600,
-    imageUrl:
-      "https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727034644/stock_img_12_90cd962f05.jpg",
-  },
-  {
-    id: "2",
-    name: "Sterling Silver Toe Ring (बिछवा)",
-    price: 850,
-    originalPrice: 1600,
-    imageUrl:
-      "https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727034643/stock_img_14_19402cf720.jpg",
-  },
-];
-
-interface ProductCardProps {
-  item: Product;
-}
-
-const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
-  return (
-    <View style={styles.card}>
-      <Image source={{ uri: item.imageUrl }} style={styles.image} />
-      <Text style={styles.name}>{item.name}</Text>
-      <View style={styles.priceContainer}>
-        <Text style={styles.price}>₹ {item.price}</Text>
-        <Text style={styles.originalPrice}>₹ {item.originalPrice}</Text>
-      </View>
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>View Product</Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
-
-const ProductList: React.FC = () => {
+const ProductList: React.FC<{ products: Product[]; navigation: any }> = ({
+  products,
+  navigation,
+}) => {
   return (
     <FlatList
       data={products}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <ProductCard item={item} />}
+      renderItem={({ item }) => (
+        <ProductCard navigation={navigation} item={item} />
+      )}
       numColumns={2}
       contentContainerStyle={styles.listContainer}
     />

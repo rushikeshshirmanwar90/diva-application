@@ -7,7 +7,7 @@ const CardStyles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     backgroundColor: "#fff",
-    width: 200,
+    width: 180,
     margin: 10,
   },
 

@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image } from "react-native";
-import { TextInput, ScrollView } from "react-native-gesture-handler";
+import {
+  View,
+  Text,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
 import Icon from "@expo/vector-icons/Ionicons";
+import { useNavigation } from "@react-navigation/core";
 
 // importing components
 import CategorySection from "../components/CategorySection";
@@ -19,7 +27,7 @@ import { domain } from "../components/route/route";
 import Banners from "../components/Banner";
 import CategorySwiper from "../components/CategorySwiper";
 
-const Home = () => {
+const Home = ({ navigation }) => {
   const [banners, setBanners] = useState<any[]>([]);
   const [category, setCategory] = useState<categories[]>([]);
 
@@ -95,103 +103,93 @@ const Home = () => {
   }, [isBannerLoaded]);
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      style={styles.mainContainer}
-    >
-      {/*==========================
-        Header section
-      =============================*/}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={styles.mainContainer}
+      >
+        {/*==========================
+          Header section
+        =============================*/}
 
-      <View style={[styles.headerContainer]}>
-        <View style={{ width: "50%" }}>
-          {/* <Image
-            source={require("../assets/logo.png")}
-            alt="Logo"
-            style={styles.logo}
-            resizeMode="stretch"
-          /> */}
-          <Text style={styles.logo}> DIVA </Text>
+        <View style={[styles.headerContainer]}>
+          <View style={{ width: "50%" }}>
+            <Text style={styles.logo}>DIVA</Text>
+          </View>
+
+          <View style={{ width: "50%", alignItems: "flex-end" }}>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("My Cart");
+              }}
+            >
+              <Image
+                source={require("../assets/images/bag-2.png")}
+                style={{ width: 16, height: 20 }}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <View
-          style={{
-            width: "50%",
-            alignItems: "flex-end",
-          }}
-        >
-          <Image
-            source={require("../assets/images/bag-2.png")}
-            style={{ width: 16, height: 20 }}
-          />
-        </View>
-      </View>
+        {/*==========================
+              searchbar section
+        ==========================*/}
 
-      {/*==========================
-            searchbar section
-      ==========================*/}
-
-      <View style={styles.MainSearchBarContainer}>
-        <View style={styles.searchBoxContainer}>
-          <Icon name="search" size={22} color="#4f4a4a" />
-          <TextInput
-            placeholder="Search"
-            style={{
-              fontFamily: "Medium",
-              paddingHorizontal: 10,
-              fontSize: 12,
-            }}
-          />
-        </View>
-      </View>
-
-      {/*========================== 
-          Home Banner Section
-      ========================== */}
-
-      <View style={{ marginBottom: 25 }}>
-        <Banners />
-      </View>
-
-      {/*
-        =========================
-          Best Selling for Womens
-        ======================== 
-      */}
-
-      <View>
-
-        <View style={utilsStyles.titleContainer}>
-          <Text style={utilsStyles.title}>Best Selling</Text>
-          <View style={utilsStyles.dot}></View>
-          <Text style={utilsStyles.subTitle}>For Womens</Text>
+        <View style={styles.MainSearchBarContainer}>
+          <View style={styles.searchBoxContainer}>
+            <Icon name="search" size={22} color="#4f4a4a" />
+            <TextInput
+              placeholder="Search"
+              style={{
+                fontFamily: "Medium",
+                paddingHorizontal: 10,
+                fontSize: 12,
+              }}
+            />
+          </View>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <CategorySection product={womenProduct} />
-        </ScrollView>
-      </View>
+        {/*==========================
+            Home Banner Section
+        ========================== */}
+        <View style={{ marginBottom: 25 }}>
+          <Banners navigation={navigation} />
+        </View>
 
-      <View style={{ marginVertical: 25 }}>
-        <CategorySwiper />
-      </View>
+        {/* =========================
+            Best Selling for Womens
+        ========================== */}
+        <View>
+          <View style={utilsStyles.titleContainer}>
+            <Text style={utilsStyles.title}>Best Selling</Text>
+            <View style={utilsStyles.dot}></View>
+            <Text style={utilsStyles.subTitle}>For Womens</Text>
+          </View>
 
-      {/*=========================
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <CategorySection product={womenProduct} navigation={navigation} />
+          </ScrollView>
+        </View>
+
+        <View style={{ marginVertical: 25 }}>
+          <CategorySwiper navigation={navigation} />
+        </View>
+
+        {/* =========================
             Best Selling for mens
-      ========================*/}
-
-      <View style={{ marginTop: 20 }}>
-        <View style={utilsStyles.titleContainer}>
-          <Text style={utilsStyles.title}>Best Selling</Text>
-          <View style={utilsStyles.dot}></View>
-          <Text style={utilsStyles.subTitle}>For mens</Text>
+        ========================== */}
+        <View style={{ marginTop: 20 }}>
+          <View style={utilsStyles.titleContainer}>
+            <Text style={utilsStyles.title}>Best Selling</Text>
+            <View style={utilsStyles.dot}></View>
+            <Text style={utilsStyles.subTitle}>For mens</Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <CategorySection product={menProduct} navigation={navigation} />
+          </ScrollView>
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <CategorySection product={menProduct} />
-        </ScrollView>
-      </View>
-
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

@@ -6,6 +6,7 @@ import {
   Dimensions,
   ActivityIndicator,
   Image,
+  TouchableOpacity,
   ScrollView,
 } from "react-native";
 import { domain } from "./route/route";
@@ -13,7 +14,7 @@ import { categories } from "../interface/Category";
 
 const { width } = Dimensions.get("window");
 
-const CategorySwiper = () => {
+const CategorySwiper = ({ navigation }) => {
   const [categories, setCategories] = useState<categories[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState<boolean>(true);
 
@@ -47,16 +48,27 @@ const CategorySwiper = () => {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.scrollContainer}
     >
-      {categories.map((item: categories) => (
-        <View key={item.id} style={styles.item}>
-          <Image
-            source={{ uri: item.attributes.home_pic.data.attributes.url }}
-            style={styles.image}
-          />
-          <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
-            {item.attributes.name}
-          </Text>
-        </View>
+      {categories.map((item: categories, index) => (
+        <TouchableOpacity
+          key={index}
+          onPress={() => {
+            navigation.navigate("Category Detail", {
+              id: item.id,
+              banner: item.attributes.bannner.data.attributes.url,
+            });
+          }}
+        >
+          <View key={item.id} style={styles.item}>
+            <Image
+              source={{ uri: item.attributes.home_pic.data.attributes.url }}
+              style={styles.image}
+            />
+
+            <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+              {item.attributes.name}
+            </Text>
+          </View>
+        </TouchableOpacity>
       ))}
     </ScrollView>
   );
@@ -86,7 +98,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     textAlign: "center",
-    fontWeight : "semibold",
+    fontWeight: "semibold",
     width: "100%",
   },
 });

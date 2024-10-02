@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import ProductCard from "./utils/ProductCard";
 import { domain } from "./route/route";
 import { Product } from "../interface/Product";
 
-const CategorySection: React.FC<{ product?: any[] }> = () => {
-
+const CategorySection: React.FC<{ product?: any[]; navigation: any }> = ({
+  navigation,
+}) => {
   const [productData, setProductData] = useState<Product[]>([]);
   const [productLoading, setProductLoading] = useState<boolean>(true);
 
@@ -34,7 +35,14 @@ const CategorySection: React.FC<{ product?: any[] }> = () => {
   return (
     <View style={styles.flex}>
       {productData.map((item, index) => (
-        <ProductCard item={item} key={index} />
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("Details", { id: item.id });
+          }}
+          key={index}
+        >
+          <ProductCard navigation={navigation} item={item} />
+        </TouchableOpacity>
       ))}
     </View>
   );

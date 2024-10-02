@@ -13,7 +13,7 @@ import { BannerProps } from "../interface/banner";
 
 const { width } = Dimensions.get("window");
 
-const Banner = () => {
+const Banner = ({ navigation }) => {
   const [banner, setBanner] = useState<BannerProps[]>([]);
   const [bannerLoading, setBannerLoading] = useState<boolean>(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -61,7 +61,6 @@ const Banner = () => {
   }
 
   return (
-
     <View style={styles.container}>
       <FlatList
         data={banner}
@@ -75,11 +74,20 @@ const Banner = () => {
         }}
         renderItem={({ item }) => (
           <View style={styles.slide}>
-            <Image
-              source={{ uri: item.attributes.banner.data.attributes.url }}
-              style={styles.bannerImage}
-              resizeMode="cover"
-            />
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("Category Detail", {
+                  id: item.id,
+                  banner: item.attributes.banner.data.attributes.url,
+                });
+              }}
+            >
+              <Image
+                source={{ uri: item.attributes.banner.data.attributes.url }}
+                style={styles.bannerImage}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
           </View>
         )}
         keyExtractor={(item, index) => index.toString()}

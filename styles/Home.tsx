@@ -1,6 +1,11 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+
   mainContainer: {
     backgroundColor: "#fff",
     paddingHorizontal: 20,
@@ -9,7 +14,7 @@ export const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: "row",
     width: "100%",
-    marginTop: 10,
+    marginTop: 35,
     alignItems: "center",
   },
 

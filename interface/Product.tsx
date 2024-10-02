@@ -6,9 +6,11 @@ export interface Product {
     name: string;
     price: number;
     compare_price: number;
-    description: BlocksContent;
+    description: string;
     youtube_link: string;
     gender: string;
+    Return_7_day: boolean;
+    Warranty_6_month: boolean;
     images: {
       data: {
         id: number;
