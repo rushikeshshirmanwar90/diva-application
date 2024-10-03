@@ -89,11 +89,7 @@
     fetchReview();
   }, [productId, randomNum]);
 
-
-
-
 // ADD REVIEW CODE
-
   const submitHandler = async (e: React.FormEvent) => {
     e.preventDefault();
     if (userLocalId !== "null") {
