@@ -11,7 +11,7 @@ import { domain } from "./route/route";
 const CategoryBar = ({ navigation }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [categories, setCategories] = useState<
-    { id: string; name: string; bannerUrl: any }[]
+    { id: string; name: string; bannerUrl: string }[]
   >([]);
 
   useEffect(() => {
@@ -38,8 +38,6 @@ const CategoryBar = ({ navigation }) => {
     getData();
   }, [loading]);
 
-  console.log(categories[0].bannerUrl);
-
   return (
     <View style={styles.container}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -54,6 +52,7 @@ const CategoryBar = ({ navigation }) => {
               });
             }}
           >
+            
             <Text style={styles.categoryText}>{category.name}</Text>
           </TouchableOpacity>
         ))}

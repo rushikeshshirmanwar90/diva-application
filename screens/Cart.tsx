@@ -105,7 +105,6 @@ const CartScreen = () => {
   );
 
   return (
-
     <View style={styles.container}>
       <Text style={styles.header}>Your Cart</Text>
       <FlatList

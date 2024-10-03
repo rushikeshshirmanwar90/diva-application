@@ -34,6 +34,7 @@ const CategorySwiper = ({ navigation }) => {
     getData();
   }, []);
 
+
   if (categoriesLoading) {
     return (
       <View style={styles.container}>

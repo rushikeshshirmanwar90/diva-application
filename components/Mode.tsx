@@ -7,7 +7,7 @@ import {
   TextInput,
   StyleSheet,
 } from "react-native";
-import { FontAwesome } from "@expo/vector-icons"; 
+import { FontAwesome } from "@expo/vector-icons";
 
 const ReviewModal = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -99,14 +99,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5FCFF",
   },
   reviewButton: {
-    backgroundColor: "#1D3557",
+    backgroundColor: "#333",
     padding: 15,
     borderRadius: 10,
   },
   buttonText: {
     color: "#FFF",
     fontSize: 16,
+    fontWeight: "700",
   },
+
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -149,7 +151,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   submitButton: {
-    backgroundColor: "#1D3557",
+    backgroundColor: "#333",
     padding: 10,
     borderRadius: 10,
     marginTop: 20,

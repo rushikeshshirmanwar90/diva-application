@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   iconButton: {
-    backgroundColor: "#F4A261", // Orange for edit
+    backgroundColor: "#EAB308", // Orange for edit
     padding: 10,
     borderRadius: 5,
     marginHorizontal: 5,

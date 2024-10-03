@@ -27,7 +27,7 @@ interface Recommendation {
   imageUrl: string;
 }
 
-const CartScreen: React.FC = () => {
+const CartScreen = ({ navigation }) => {
   const cartItem: CartItem = {
     name: "Golden Elegant Ganesha Rakhi",
     price: 899,
@@ -133,7 +133,12 @@ const CartScreen: React.FC = () => {
       {/* Bottom Checkout - Sticky at the Bottom */}
       <View style={styles.bottomSection}>
         <Text style={styles.totalAmount}>₹1798</Text>
-        <TouchableOpacity style={styles.checkoutButton}>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("Checkout");
+          }}
+          style={styles.checkoutButton}
+        >
           <Text style={styles.checkoutButtonText}>CHECKOUT SECURELY</Text>
         </TouchableOpacity>
       </View>
@@ -237,7 +242,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   checkoutButton: {
-    backgroundColor: "#f53d3d",
+    backgroundColor: "#F57698",
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 8,

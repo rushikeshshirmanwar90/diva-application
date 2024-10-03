@@ -10,7 +10,7 @@ const CategoryDetail = ({ navigation }) => {
   const router = useRoute();
 
   const data: any = router.params;
-
+ 
   console.log(data.banner);
 
   const [allProducts, setAllProducts] = useState<Product[]>([]);
