@@ -9,12 +9,12 @@ export const readCart = async () => {
 };
 
 export const addToCart = async (
-  productId: string | undefined,
-  userId: any,
+  productId: string,
+  userId: string,
   product_name: string | undefined,
   product_price: number | undefined,
-  img: any
-) => {
+  img: string
+): Promise<boolean> => {
   try {
     const response = await fetch(`${domain}/api/carts`, {
       method: "POST",
@@ -24,21 +24,25 @@ export const addToCart = async (
       body: JSON.stringify({
         data: {
           Product_id: productId,
-          product_name: product_name,
-          product_price: product_price,
+          product_name,
+          product_price,
           user_id: userId,
           qnt: 1,
-          img: img,
+          img,
         },
       }),
     });
 
-    const data = await response.json();
-    console.log("Item added to cart:", data);
-    return data;
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      throw new Error(`Failed to add item to cart: ${errorMessage}`);
+    }
+
+    console.log("Item added to cart successfully");
+    return true;
   } catch (error) {
     console.error("Error adding item to cart:", error);
-    throw error;
+    return false;
   }
 };
 
@@ -64,7 +68,7 @@ export const increment = async (cartId: number, qnt: number) => {
   return data.data;
 };
 
-export const decrement  = async (cartId: number, qnt: number) => {
+export const decrement = async (cartId: number, qnt: number) => {
   qnt--;
 
   const res = await fetch(`${domain}/api/carts/${cartId}`, {

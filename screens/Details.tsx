@@ -10,8 +10,11 @@ import { useRoute } from "@react-navigation/native";
 import ReviewCard from "../components/ReviewCard";
 import { Product } from "../interface/Product";
 import { domain } from "../components/route/route";
+import { addToCart } from "../functions/cart/main";
 
-const Details = ({ navigation }) => {
+const Details: React.FC<{
+  navigation: any;
+}> = ({ navigation }) => {
   const [product, setProduct] = useState<Product>();
   const [loading, setLoading] = useState<boolean>(true);
   const [images, setImages] = useState<string[]>([]);
@@ -159,7 +162,18 @@ const Details = ({ navigation }) => {
 
       {/* Sticky Add To Cart Button */}
       <View style={styles.stickyCartButtonContainer}>
-        <TouchableOpacity style={styles.cartButton}>
+        <TouchableOpacity
+          onPress={() => {
+            addToCart(
+              String(id),
+              "10",
+              product?.attributes?.name,
+              product?.attributes?.price,
+              images[0]
+            );
+          }}
+          style={styles.cartButton}
+        >
           <Text style={styles.cartButtonText}>Add To Cart</Text>
         </TouchableOpacity>
       </View>

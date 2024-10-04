@@ -27,7 +27,9 @@ import { domain } from "../components/route/route";
 import Banners from "../components/Banner";
 import CategorySwiper from "../components/CategorySwiper";
 
-const Home = ({ navigation }) => {
+const Home: React.FC<{
+  navigation: any;
+}> = ({ navigation }) => {
   const [banners, setBanners] = useState<any[]>([]);
   const [category, setCategory] = useState<categories[]>([]);
 
