@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { createUserWithEmailAndPassword } from "@react-native-firebase/auth";
 import React, { useState } from "react";
 import {
   View,
@@ -7,13 +6,89 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Modal,
+  Alert,
 } from "react-native";
-import { auth } from "../firebase/config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { domain } from "../components/route/route";
 
-const RegistrationScreen = () => {
+const RegistrationScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  const validateEmail = (email: any) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleRegister = async () => {
+    try {
+      // Email validation
+      if (!validateEmail(email)) {
+        setModalMessage("Please enter a valid email address.");
+        setShowModal(true);
+        setTimeout(() => setShowModal(false), 5000);
+        return;
+      }
+
+      // Prepare the data for the backend API
+      const userData = {
+        fullName,
+        email,
+        password,
+      };
+
+      // Send request to the backend API
+      const response = await fetch(
+        `${domain}/api/user-ids`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ data: userData }),
+        }
+      );
+
+      // Check if the request was successful
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Parse the JSON response
+      const result = await response.json();
+
+      // Check if user already exists
+      if (result.error && result.error.message.includes("already exists")) {
+        setModalMessage(
+          "User already exists. Please try with a different email."
+        );
+        setShowModal(true);
+        setTimeout(() => setShowModal(false), 5000);
+        return;
+      }
+
+      // Store the returned ID in AsyncStorage
+      await AsyncStorage.setItem("@userId", String(result.data.id));
+
+      // Navigate to the next screen or show success message
+      Alert.alert("Success", "Registration successful!", [
+        { text: "OK", onPress: () => console.log("OK Pressed") },
+      ]);
+      navigation.replace("Home");
+    } catch (error: any) {
+      console.error("Error registering user:", error.message);
+      setModalMessage(
+        "An error occurred during registration. Please try again."
+      );
+      setShowModal(true);
+      setTimeout(() => setShowModal(false), 5000);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -21,19 +96,17 @@ const RegistrationScreen = () => {
       <Text style={styles.title}>Register To DIVA</Text>
 
       <View style={styles.form}>
-
         <View style={styles.input}>
           <Text style={styles.inputLabel}>Full Name</Text>
           <TextInput
             autoCapitalize="none"
             autoCorrect={false}
             clearButtonMode="while-editing"
-            keyboardType="email-address"
-            onChangeText={setEmail}
+            onChangeText={setFullName}
             placeholderTextColor="#6b7280"
             style={styles.inputControl}
-            value={email}
-            placeholder="Enter Full name"
+            value={fullName}
+            placeholder="Enter Full Name"
           />
         </View>
 
@@ -48,7 +121,7 @@ const RegistrationScreen = () => {
             placeholderTextColor="#6b7280"
             style={styles.inputControl}
             value={email}
-            placeholder="Enter E-mail"
+            placeholder="Enter Email"
           />
         </View>
 
@@ -82,7 +155,7 @@ const RegistrationScreen = () => {
         </View>
 
         {/* Login Button */}
-        <TouchableOpacity style={styles.btn}>
+        <TouchableOpacity style={styles.btn} onPress={handleRegister}>
           <Text style={styles.btnText}>Register</Text>
         </TouchableOpacity>
 
@@ -96,6 +169,15 @@ const RegistrationScreen = () => {
       <Text style={styles.footerText}>
         By using the DIVA app you agree to our .
       </Text>
+
+      {/* Modal for displaying messages */}
+      <Modal visible={showModal} transparent={true} animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalMessage}>{modalMessage}</Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -187,6 +269,26 @@ const styles = StyleSheet.create({
 
   link: {
     color: "#075eec",
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  modalContent: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    width: "80%",
+  },
+
+  modalMessage: {
+    fontSize: 16,
+    textAlign: "center",
+    color: "#333",
   },
 });
 
