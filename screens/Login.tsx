@@ -1,27 +1,86 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Modal,
 } from "react-native";
+import { domain } from "../components/route/route";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const LoginSignupScreen = () => {
+const LoginSignupScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const userId = await AsyncStorage.getItem("@userId");
+      if (userId) {
+        navigation.navigate("DIVA");
+      }
+    };
+    checkUser();
+  }, []);
+
+  const handleLogin = async () => {
+    try {
+      if (validateEmail(email)) {
+        const data = await getUserData(email, password);
+        if (data.length !== 0) {
+          await AsyncStorage.setItem("@userId", String(data[0].id));
+          navigation.navigate("DIVA");
+        } else {
+          setModalMessage(
+            "User does not exist with the provided email or password"
+          );
+          setShowModal(true);
+          setTimeout(() => setShowModal(false), 1500);
+        }
+      } else {
+        setModalMessage("Invalid Email Format");
+        setShowModal(true);
+        setTimeout(() => setShowModal(false), 1500);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+    }
+  };
+
+  const getUserData = async (email: string, password: string) => {
+    try {
+      const res = await fetch(
+        `${domain}/api/user-ids?filters[$and][0][email][$eq]=${email}&filters[$and][1][password][$eq]=${password}`
+      );
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      return data.data;
+    } catch (error: any) {
+      console.error("Error checking user existence:", error.message);
+      return [];
+    }
+  };
+
+  const validateEmail = (email: any) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   return (
     <View style={styles.container}>
-
       <Text style={styles.logo}>DIVA</Text>
       <Text style={styles.title}>Login to DIVA</Text>
 
-      {/* Form Fields */}
       <View style={styles.form}>
-
         <View style={styles.input}>
           <Text style={styles.inputLabel}>Email address</Text>
           <TextInput
@@ -34,7 +93,6 @@ const LoginSignupScreen = () => {
             style={styles.inputControl}
             value={email}
           />
-
         </View>
 
         <View style={styles.input}>
@@ -49,11 +107,10 @@ const LoginSignupScreen = () => {
               secureTextEntry={!showPassword}
               value={password}
             />
-
-            <TouchableOpacity style={{
-              position: 'absolute',
-              left: 280,
-            }} onPress={() => setShowPassword(!showPassword)}>
+            <TouchableOpacity
+              style={{ position: "absolute", left: 280 }}
+              onPress={() => setShowPassword(!showPassword)}
+            >
               <Ionicons
                 name={showPassword ? "eye-off" : "eye"}
                 size={24}
@@ -63,22 +120,27 @@ const LoginSignupScreen = () => {
           </View>
         </View>
 
-        {/* Login Button */}
-        <TouchableOpacity style={styles.btn}>
+        <TouchableOpacity onPress={handleLogin} style={styles.btn}>
           <Text style={styles.btnText}>Login</Text>
         </TouchableOpacity>
 
-        {/* Link to Signup */}
         <Text style={styles.formLink}>
           Don't have an account? <Text style={styles.link}>Sign up</Text>
         </Text>
       </View>
 
-      {/* Footer */}
       <Text style={styles.footerText}>
         By using the DIVA app you agree to our{" "}
         <Text style={styles.link}>Terms of Service</Text>.
       </Text>
+
+      <Modal visible={showModal} transparent={true} animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalMessage}>{modalMessage}</Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -167,6 +229,26 @@ const styles = StyleSheet.create({
   },
   link: {
     color: "#075eec",
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  modalContent: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    width: "80%",
+  },
+
+  modalMessage: {
+    fontSize: 16,
+    textAlign: "center",
+    color: "#333",
   },
 });
 

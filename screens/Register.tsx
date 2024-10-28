@@ -24,10 +24,8 @@ const RegistrationScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
-
   const handleRegister = async () => {
     try {
-      // Email validation
       if (!validateEmail(email)) {
         setModalMessage("Please enter a valid email address.");
         setShowModal(true);
@@ -35,51 +33,48 @@ const RegistrationScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         return;
       }
 
-      // Prepare the data for the backend API
-      const userData = {
-        fullName,
-        email,
-        password,
-      };
+      const isUserExists = await checkUser(email);
 
-      // Send request to the backend API
-      const response = await fetch(
-        `${domain}/api/user-ids`,
-        {
+      if (!isUserExists) {
+        // Prepare the data for the backend API
+        const userData = {
+          fullName,
+          email,
+          password,
+        };
+
+        // Send request to the backend API
+        const response = await fetch(`${domain}/api/user-ids`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ data: userData }),
+        });
+
+        // Check if the request was successful
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      );
 
-      // Check if the request was successful
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+        // Parse the JSON response
+        const result = await response.json();
 
-      // Parse the JSON response
-      const result = await response.json();
+        // Store the returned ID in AsyncStorage
+        await AsyncStorage.setItem("@userId", String(result.data.id));
 
-      // Check if user already exists
-      if (result.error && result.error.message.includes("already exists")) {
+        // Navigate to the next screen or show success message
+        Alert.alert("Success", "Registration successful!", [
+          { text: "OK", onPress: () => console.log("OK Pressed") },
+        ]);
+        navigation.navigate("DIVA");
+      } else {
         setModalMessage(
           "User already exists. Please try with a different email."
         );
         setShowModal(true);
         setTimeout(() => setShowModal(false), 5000);
-        return;
       }
-
-      // Store the returned ID in AsyncStorage
-      await AsyncStorage.setItem("@userId", String(result.data.id));
-
-      // Navigate to the next screen or show success message
-      Alert.alert("Success", "Registration successful!", [
-        { text: "OK", onPress: () => console.log("OK Pressed") },
-      ]);
-      navigation.replace("Home");
     } catch (error: any) {
       console.error("Error registering user:", error.message);
       setModalMessage(
@@ -87,6 +82,24 @@ const RegistrationScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       );
       setShowModal(true);
       setTimeout(() => setShowModal(false), 5000);
+    }
+  };
+
+  const checkUser = async (email: string) => {
+    try {
+      const res = await fetch(
+        `${domain}/api/user-ids?filters[$and][0][email][$eq]=${email}`
+      );
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      return data.data.length > 0;
+    } catch (error: any) {
+      console.error("Error checking user existence:", error.message);
+      return false;
     }
   };
 

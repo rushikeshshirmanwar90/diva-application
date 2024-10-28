@@ -17,9 +17,8 @@ const Navigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name="Register" component={RegistrationScreen} />
         <Stack.Screen name="Login" component={LoginSignupScreen} />
-
+        <Stack.Screen name="Register" component={RegistrationScreen} />
         <Stack.Screen
           name="DIVA"
           component={Home}
@@ -33,7 +32,6 @@ const Navigator = () => {
         <Stack.Screen name="Category Detail" component={CategoryDetail} />
         <Stack.Screen name="Checkout" component={Checkout} />
         <Stack.Screen name="User Address" component={AddressForm} />
-
       </Stack.Navigator>
     </NavigationContainer>
   );
