@@ -4,7 +4,7 @@ import ProductCard from "./utils/ProductCard";
 import { domain } from "./route/route";
 import { Product } from "../interface/Product";
 
-const CategorySection: React.FC<{ product?: any[]; navigation: any }> = ({
+const CategorySection: React.FC<{navigation: any }> = ({
   navigation,
 }) => {
   const [productData, setProductData] = useState<Product[]>([]);

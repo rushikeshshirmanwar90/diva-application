@@ -1,24 +1,14 @@
 export interface categories {
   id: number;
-  attributes: {
+  name: string;
+  home_pic: {
+    id: number;
     name: string;
-    home_pic: {
-      data: {
-        id: number;
-        attributes: {
-          name: string;
-          url: string;
-        };
-      };
-    };
-    bannner: {
-      data: {
-        id: number;
-        attributes: {
-          name: string;
-          url: string;
-        };
-      };
-    };
+    url: string;
+  };
+  bannner: {
+    id: number;
+    name: string;
+    url: string;
   };
 }

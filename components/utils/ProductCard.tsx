@@ -4,30 +4,39 @@ import { View, Text, Image, TouchableOpacity } from "react-native";
 // importing styles
 import styles from "../../styles/ProductCard";
 import { Product } from "../../interface/Product";
+import { domain } from "../route/route";
 
 const ProductCard: React.FC<{ item?: Product; navigation: any }> = ({
   item,
   navigation,
 }) => {
+  const imageUrl = item?.images?.[0]?.url ?? "";
+
   return (
     <TouchableOpacity
       onPress={() => {
-        navigation.navigate("Details", { id: item.id });
+        if (item?.id) {
+          navigation.navigate("Details", { id: item.documentId });
+        }
       }}
     >
       <View style={styles.card}>
-        <Image
-          source={{ uri: item?.attributes.images.data[0].attributes.url }}
-          style={styles.productImage}
-          resizeMode="cover"
-        />
+        {imageUrl ? (
+          <Image
+            source={{ uri: `${domain}${imageUrl}` }}
+            style={styles.productImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <Text>Image not available</Text>
+        )}
 
-        <Text style={styles.productTitle}>{item?.attributes.name}</Text>
+        <Text style={styles.productTitle}>{item?.name ?? "Product Name"}</Text>
         <View style={styles.priceContainer}>
-          <Text style={styles.discountedPrice}>₹{item?.attributes.price}</Text>
-          <Text style={styles.originalPrice}>
-            ₹{item?.attributes.compare_price}
-          </Text>
+          <Text style={styles.discountedPrice}>₹{item?.price ?? "N/A"}</Text>
+          {item?.compare_price && (
+            <Text style={styles.originalPrice}>₹{item.compare_price}</Text>
+          )}
         </View>
 
         <TouchableOpacity style={styles.button}>

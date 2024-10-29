@@ -1,10 +1,10 @@
 import { Modal, StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
 
-const Models = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
-
+const Models: React.FC<{ showModal: boolean; modalMessage: string }> = ({
+  showModal,
+  modalMessage,
+}) => {
   return (
     <View>
       <Modal visible={showModal} transparent={true} animationType="fade">

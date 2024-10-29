@@ -61,7 +61,7 @@ const RegistrationScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         const result = await response.json();
 
         // Store the returned ID in AsyncStorage
-        await AsyncStorage.setItem("@userId", String(result.data.id));
+        await AsyncStorage.setItem("@userId", String(result.data.documentId));
 
         // Navigate to the next screen or show success message
         Alert.alert("Success", "Registration successful!", [

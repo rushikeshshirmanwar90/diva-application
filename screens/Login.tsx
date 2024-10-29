@@ -20,11 +20,18 @@ const LoginSignupScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   useEffect(() => {
     const checkUser = async () => {
-      const userId = await AsyncStorage.getItem("@userId");
-      if (userId) {
-        navigation.navigate("DIVA");
+      try {
+        const userId = await AsyncStorage.getItem("@userId");
+        if (userId) {
+          // Only navigate if userId is defined
+          console.log(userId);
+          navigation.navigate("DIVA");
+        }
+      } catch (error) {
+        console.error("Error retrieving user ID:", error);
       }
     };
+
     checkUser();
   }, []);
 
@@ -33,7 +40,7 @@ const LoginSignupScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       if (validateEmail(email)) {
         const data = await getUserData(email, password);
         if (data.length !== 0) {
-          await AsyncStorage.setItem("@userId", String(data[0].id));
+          await AsyncStorage.setItem("@userId", String(data[0].documentId));
           navigation.navigate("DIVA");
         } else {
           setModalMessage(
@@ -124,9 +131,15 @@ const LoginSignupScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           <Text style={styles.btnText}>Login</Text>
         </TouchableOpacity>
 
-        <Text style={styles.formLink}>
-          Don't have an account? <Text style={styles.link}>Sign up</Text>
-        </Text>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("Register");
+          }}
+        >
+          <Text style={styles.formLink}>
+            Don't have an account? <Text style={styles.link}>Sign up</Text>
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <Text style={styles.footerText}>

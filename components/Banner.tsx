@@ -7,13 +7,14 @@ import {
   FlatList,
   Dimensions,
   TouchableOpacity,
+  Text,
 } from "react-native";
 import { domain } from "./route/route";
 import { BannerProps } from "../interface/banner";
 
 const { width } = Dimensions.get("window");
 
-const Banner = ({ navigation }) => {
+const Banner: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [banner, setBanner] = useState<BannerProps[]>([]);
   const [bannerLoading, setBannerLoading] = useState<boolean>(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -25,10 +26,12 @@ const Banner = ({ navigation }) => {
         const res = await fetch(`${domain}/api/home-banners?populate=*`);
         const data = await res.json();
         const sortedBanners = data.data.sort(
-          (a: BannerProps, b: BannerProps) =>
-            b.attributes.priority - a.attributes.priority
+          (a: BannerProps, b: BannerProps) => b.priority - a.priority
         );
         setBanner(sortedBanners);
+
+        console.log(data.data[0].banner.url);
+
         setBannerLoading(false);
       } catch (error) {
         console.error("Error fetching banners:", error);
@@ -78,12 +81,14 @@ const Banner = ({ navigation }) => {
               onPress={() => {
                 navigation.navigate("Category Detail", {
                   id: item.id,
-                  banner: item.attributes.banner.data.attributes.url,
+                  banner: item.banner.url,
                 });
               }}
             >
               <Image
-                source={{ uri: item.attributes.banner.data.attributes.url }}
+                source={{
+                  uri: `${domain}${item.banner.url}`,
+                }}
                 style={styles.bannerImage}
                 resizeMode="cover"
               />

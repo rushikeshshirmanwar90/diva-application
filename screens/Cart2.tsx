@@ -1,4 +1,5 @@
-import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,8 +7,9 @@ import {
   TouchableOpacity,
   FlatList,
   ScrollView,
-  StyleSheet,
+  StyleSheet
 } from "react-native";
+import { domain } from "../components/route/route";
 
 interface CartItem {
   name: string;
@@ -27,16 +29,9 @@ interface Recommendation {
   imageUrl: string;
 }
 
-const CartScreen = ({ navigation }) => {
-  const cartItem: CartItem = {
-    name: "Golden Elegant Ganesha Rakhi",
-    price: 899,
-    originalPrice: 1599,
-    quantity: 2,
-    imageUrl:
-      "https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727034644/stock_img_12_90cd962f05.jpg",
-    stockLeft: 4,
-  };
+const CartScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const [userId, setUserId] = useState<string>("");
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   const recommendations: Recommendation[] = [
     {
@@ -59,64 +54,98 @@ const CartScreen = ({ navigation }) => {
     },
   ];
 
-  const renderItem = ({ item }: { item: Recommendation }) => {
-    // Truncate the product name to 2 words if needed
-    const truncateName = (name: string) => {
-      const words = name.split(" ");
-      if (words.length > 2) {
-        return `${words.slice(0, 2).join(" ")}...`;
+  const truncateName = (name: string) => {
+    const words = name.split(" ");
+    if (words.length > 2) {
+      return `${words.slice(0, 2).join(" ")}...`;
+    }
+    return name;
+  };
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem("@userId");
+        if (storedUserId) {
+          setUserId(storedUserId);
+        }
+      } catch (error) {
+        console.error("Error retrieving user ID:", error);
       }
-      return name;
+    };
+    checkUser();
+  }, []);
+
+  useEffect(() => {
+    const getData = async () => {
+      if (!userId) return; // Don't fetch data if userId is empty
+
+      const res = await fetch(
+        `${domain}/api/carts?filters[$and][0][user_id][$eq]=${userId}`
+      );
+
+      const data = await res.json();
+      const fetchedCartItems = data.data.map((item: any) => ({
+        id: item.id,
+        name: item.product_name,
+        price: item.product_price,
+        originalPrice: item.originalPrice || item.product_price,
+        quantity: parseInt(item.qnt),
+        imageUrl: `${domain}${item.img}`,
+        stockLeft: 4, // Example data; adjust based on API response
+      }));
+      setCartItems(fetchedCartItems);
     };
 
-    return (
-      <View style={styles.recommendationItem}>
-        <Image
-          source={{
-            uri: item.imageUrl,
-          }}
-          style={styles.productImage}
-        />
-        <Text style={styles.productName}>{truncateName(item.name)}</Text>
-        <Text style={styles.productRating}>⭐ {item.rating}</Text>
-        <Text style={styles.productPrice}>
-          ₹{item.price}{" "}
-          <Text style={styles.strikethrough}>MRP ₹{item.originalPrice}</Text>
-        </Text>
+    getData();
+  }, [userId]);
 
-        {/* View Product Button */}
-        <TouchableOpacity style={styles.viewProductButton}>
-          <Text style={styles.viewProductButtonText}>View Product</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
+  const renderItem = ({ item }: { item: Recommendation }) => (
+    <View style={styles.recommendationItem}>
+      <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
+      <Text style={styles.productName}>{truncateName(item.name)}</Text>
+      <Text style={styles.productRating}>⭐ {item.rating}</Text>
+      <Text style={styles.productPrice}>
+        ₹{item.price}{" "}
+        <Text style={styles.strikethrough}>MRP ₹{item.originalPrice}</Text>
+      </Text>
+
+      {/* View Product Button */}
+      <TouchableOpacity style={styles.viewProductButton}>
+        <Text style={styles.viewProductButtonText}>View Product</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
-        {/* Cart Item */}
-        <View style={styles.cartItem}>
-          <Image source={{ uri: cartItem.imageUrl }} style={styles.cartImage} />
-          <View style={styles.cartDetails}>
-            <Text style={styles.itemName}>{cartItem.name}</Text>
-            <Text style={styles.itemPrice}>
-              ₹{cartItem.price}{" "}
-              <Text style={styles.strikethrough}>
-                ₹{cartItem.originalPrice}
+        {cartItems.map((cartItem, index) => (
+          <View key={index} style={styles.cartItem}>
+            <Image
+              source={{ uri: cartItem.imageUrl }}
+              style={styles.cartImage}
+            />
+            <View style={styles.cartDetails}>
+              <Text style={styles.itemName}>{cartItem.name}</Text>
+              <Text style={styles.itemPrice}>
+                ₹{cartItem.price}{" "}
+                <Text style={styles.strikethrough}>
+                  ₹{cartItem.originalPrice}
+                </Text>
               </Text>
-            </Text>
-            <View style={styles.quantitySelector}>
-              <TouchableOpacity>
-                <Text style={styles.quantityButton}>-</Text>
-              </TouchableOpacity>
-              <Text style={styles.quantityText}>{cartItem.quantity}</Text>
-              <TouchableOpacity>
-                <Text style={styles.quantityButton}>+</Text>
-              </TouchableOpacity>
+              <View style={styles.quantitySelector}>
+                <TouchableOpacity>
+                  <Text style={styles.quantityButton}>-</Text>
+                </TouchableOpacity>
+                <Text style={styles.quantityText}>{cartItem.quantity}</Text>
+                <TouchableOpacity>
+                  <Text style={styles.quantityButton}>+</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
+        ))}
 
         {/* Recommendations */}
         <Text style={styles.recommendationsHeader}>Must-haves</Text>
@@ -242,7 +271,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   checkoutButton: {
-    backgroundColor: "#F57698",
+    backgroundColor: "#333",
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 8,

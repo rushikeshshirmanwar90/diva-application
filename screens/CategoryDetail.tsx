@@ -6,15 +6,15 @@ import React, { useState, useEffect } from "react";
 import { Product } from "../interface/Product";
 import { domain } from "../components/route/route";
 
-const CategoryDetail = ({ navigation }) => {
+const CategoryDetail: React.FC<{ navigation: any }> = ({ navigation }) => {
   const router = useRoute();
 
   const data: any = router.params;
- 
+
   console.log(data.banner);
 
   const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [categoryProduct, setCategoryProduct] = useState<Product[]>();
+  const [categoryProduct, setCategoryProduct] = useState<Product[]>([]);
   const [productLoaded, setProductLoaded] = useState<boolean>(true);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const CategoryDetail = ({ navigation }) => {
       setAllProducts(tmp);
 
       const categoryProduct1 = tmp.filter(
-        (i: Product) => i.attributes.category.data.id == data.id
+        (i: Product) => i.category.id == data.id
       );
       setCategoryProduct(categoryProduct1);
       setProductLoaded(false);

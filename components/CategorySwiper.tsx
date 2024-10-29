@@ -14,7 +14,7 @@ import { categories } from "../interface/Category";
 
 const { width } = Dimensions.get("window");
 
-const CategorySwiper = ({ navigation }) => {
+const CategorySwiper: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [categories, setCategories] = useState<categories[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState<boolean>(true);
 
@@ -33,7 +33,6 @@ const CategorySwiper = ({ navigation }) => {
 
     getData();
   }, []);
-
 
   if (categoriesLoading) {
     return (
@@ -55,18 +54,20 @@ const CategorySwiper = ({ navigation }) => {
           onPress={() => {
             navigation.navigate("Category Detail", {
               id: item.id,
-              banner: item.attributes.bannner.data.attributes.url,
+              banner: `${domain}${item.bannner.url}`,
             });
           }}
         >
           <View key={item.id} style={styles.item}>
             <Image
-              source={{ uri: item.attributes.home_pic.data.attributes.url }}
+              source={{
+                uri: `${domain}${item.home_pic.url}`,
+              }}
               style={styles.image}
             />
 
             <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
-              {item.attributes.name}
+              {item.name}
             </Text>
           </View>
         </TouchableOpacity>
