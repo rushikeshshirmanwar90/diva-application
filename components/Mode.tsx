@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,11 +8,38 @@ import {
   StyleSheet,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { domain } from "./route/route";
+import Models from "./utils/Models";
 
-const ReviewModal = () => {
+const ReviewModal: React.FC<{ productId: number }> = ({ productId }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [reviewText, setReviewText] = useState("");
   const [rating, setRating] = useState(0);
+  const [userId, setUserId] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  const setModalTime = (msg: string, time: number) => {
+    setModalMessage(msg);
+    setShowModal(true);
+    setTimeout(() => setShowModal(false), time);
+  };
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const userId = await AsyncStorage.getItem("@userId");
+        if (userId) {
+          setUserId(userId);
+        }
+      } catch (error) {
+        console.error("Error retrieving user ID:", error);
+      }
+    };
+
+    checkUser();
+  }, []);
 
   const renderStars = () => {
     let stars = [];
@@ -31,9 +58,38 @@ const ReviewModal = () => {
     return stars;
   };
 
-  const submitReview = () => {
-    console.log("Review Submitted:", { rating, reviewText });
-    setModalVisible(false);
+  const submitReview = async () => {
+    try {
+      const res = await fetch(`${domain}/api/reviews`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          data: {
+            product_id: Number(productId),
+            ratting: rating,
+            Description: reviewText,
+            user_id: userId,
+          },
+        }),
+      });
+
+      console.log("productId", productId);
+
+      if (res.ok) {
+        setModalVisible(false);
+        setReviewText("");
+        setRating(0);
+        setModalTime("Review Submitted Successfully", 1000);
+      } else {
+        const errorMessage = await res.text();
+        console.log("Response Error:", errorMessage);
+        setModalTime("Review Submission Failed", 1000);
+      }
+    } catch (error) {
+      console.log("Fetch Error:", error);
+    }
   };
 
   return (
@@ -87,6 +143,8 @@ const ReviewModal = () => {
           </View>
         </View>
       </Modal>
+
+      <Models showModal={showModal} modalMessage={modalMessage} />
     </View>
   );
 };
@@ -108,7 +166,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
   },
-
   modalOverlay: {
     flex: 1,
     justifyContent: "center",

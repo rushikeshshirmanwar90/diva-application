@@ -1,10 +1,47 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons"; // For icons
+import { ReviewProps } from "../interface/reivew";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { domain } from "./route/route";
 
-const ReviewCard = () => {
+const ReviewCard: React.FC<{ productId: number }> = ({ productId }) => {
   const rating = 5; // This is the rating number
-  const reviewText = "Nice Product";
+
+  const [review, setReview] = useState<ReviewProps[]>([]);
+  const [userId, setUserId] = useState("");
+
+  useEffect(() => {
+
+    
+    const fetchReviews = async () => {
+      const reviews = await getReviews(productId);
+      console.log(reviews.data);
+    };
+    fetchReviews();
+  }, []);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem("@userId");
+        if (storedUserId) {
+          setUserId(storedUserId);
+        }
+      } catch (error) {
+        console.error("Error retrieving user ID:", error);
+      }
+    };
+    checkUser();
+  }, []);
+
+  const getReviews = async (productId: number) => {
+    const res = await fetch(
+      `${domain}/api/reviews/${userId}?populate=*&filters[$and][0][documentId][$eq]=${productId}`
+    );
+    const data = await res.json();
+    return data;
+  };
 
   // Render stars based on rating
   const renderStars = () => {
@@ -25,24 +62,33 @@ const ReviewCard = () => {
 
   return (
     <View style={styles.container}>
-      {/* Left Side: Rating and Review Text */}
-      <View style={styles.leftContainer}>
-        <View style={styles.starContainer}>{renderStars()}</View>
-        <Text style={styles.reviewText}>{reviewText}</Text>
-      </View>
+      {review.length > 0 ? (
+        review.map((rev, index) => (
+          <View key={index} style={styles.leftContainer}>
+            <View style={styles.starContainer}>{renderStars()}</View>
+            <Text style={styles.reviewText}>{rev.Description}</Text>
+          </View>
+        ))
+      ) : (
+        <Text style={styles.reviewText}>
+          There is no review for this product.
+        </Text>
+      )}
 
       {/* Right Side: Edit and Delete Icons */}
-      <View style={styles.iconContainer}>
-        <TouchableOpacity style={styles.iconButton}>
-          <MaterialIcons name="edit" size={24} color="white" />
-        </TouchableOpacity>
+      {review.length > 0 && (
+        <View style={styles.iconContainer}>
+          <TouchableOpacity style={styles.iconButton}>
+            <MaterialIcons name="edit" size={24} color="white" />
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.iconButton, { backgroundColor: "red" }]}
-        >
-          <MaterialIcons name="delete" size={24} color="white" />
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={[styles.iconButton, { backgroundColor: "red" }]}
+          >
+            <MaterialIcons name="delete" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };

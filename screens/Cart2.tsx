@@ -7,11 +7,15 @@ import {
   TouchableOpacity,
   FlatList,
   ScrollView,
-  StyleSheet
+  StyleSheet,
 } from "react-native";
 import { domain } from "../components/route/route";
 
+// Icons
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+
 interface CartItem {
+  id: number;
   name: string;
   price: number;
   originalPrice: number;
@@ -32,27 +36,7 @@ interface Recommendation {
 const CartScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [userId, setUserId] = useState<string>("");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
-  const recommendations: Recommendation[] = [
-    {
-      id: 1,
-      name: "Tropical Blossom ",
-      rating: 5.0,
-      price: 499,
-      originalPrice: 999,
-      imageUrl:
-        "https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727378092/stock_img_11_5349fd3880.jpg",
-    },
-    {
-      id: 2,
-      name: "Opulent Fragrant Candles Box of 4",
-      rating: 4.9,
-      price: 499,
-      originalPrice: 899,
-      imageUrl:
-        "https://res.cloudinary.com/dlcq8i2sc/image/upload/v1727378182/stock_img_7_00f33603db.jpg",
-    },
-  ];
+  const [totalAmount, setTotalAmount] = useState<number>(0);
 
   const truncateName = (name: string) => {
     const words = name.split(" ");
@@ -85,8 +69,9 @@ const CartScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       );
 
       const data = await res.json();
+
       const fetchedCartItems = data.data.map((item: any) => ({
-        id: item.id,
+        id: item.documentId,
         name: item.product_name,
         price: item.product_price,
         originalPrice: item.originalPrice || item.product_price,
@@ -94,11 +79,19 @@ const CartScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         imageUrl: `${domain}${item.img}`,
         stockLeft: 4, // Example data; adjust based on API response
       }));
+
       setCartItems(fetchedCartItems);
     };
 
     getData();
   }, [userId]);
+
+  useEffect(() => {
+    const total = cartItems.reduce((sum, item) => {
+      return sum + item.price * item.quantity;
+    }, 0);
+    setTotalAmount(total);
+  }, [cartItems]);
 
   const renderItem = ({ item }: { item: Recommendation }) => (
     <View style={styles.recommendationItem}>
@@ -116,6 +109,74 @@ const CartScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       </TouchableOpacity>
     </View>
   );
+
+  const updateQuantity = async (cartItemId: number, newQuantity: number) => {
+    try {
+      const response = await fetch(`${domain}/api/carts/${cartItemId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          data: {
+            qnt: newQuantity,
+          },
+        }),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        console.error(
+          `Failed to update quantity: ${
+            responseData.message || "Unknown error"
+          }`
+        );
+        console.error("Response status:", response.status);
+        console.error("Response data:", responseData);
+        return;
+      }
+
+      console.log("Updated item:", responseData);
+
+      // Update local state
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
+          item.id === cartItemId ? { ...item, quantity: newQuantity } : item
+        )
+      );
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+    }
+  };
+
+  const handleDecrement = (cartItemId: number, currentQuantity: number) => {
+    if (currentQuantity > 1) {
+      updateQuantity(cartItemId, currentQuantity - 1);
+    }
+  };
+
+  const handleIncrement = (cartItemId: number, currentQuantity: number) => {
+    updateQuantity(cartItemId, currentQuantity + 1);
+  };
+
+  const deleteCartItem = async (id: number) => {
+    try {
+      const response = await fetch(`${domain}/api/carts/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        console.error("Failed to delete cart item:", response.status);
+        return;
+      }
+
+      console.log("Cart item deleted successfully");
+      setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("Error deleting cart item:", error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -135,33 +196,53 @@ const CartScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
                 </Text>
               </Text>
               <View style={styles.quantitySelector}>
-                <TouchableOpacity>
-                  <Text style={styles.quantityButton}>-</Text>
+                <TouchableOpacity
+                  onPress={() =>
+                    handleDecrement(cartItem.id, cartItem.quantity)
+                  }
+                  style={[
+                    styles.quantityButton,
+                    cartItem.quantity <= 1 && styles.disabledButton,
+                  ]}
+                >
+                  <Text style={styles.quantityButtonText}>-</Text>
                 </TouchableOpacity>
                 <Text style={styles.quantityText}>{cartItem.quantity}</Text>
-                <TouchableOpacity>
-                  <Text style={styles.quantityButton}>+</Text>
+                <TouchableOpacity
+                  onPress={() =>
+                    handleIncrement(cartItem.id, cartItem.quantity)
+                  }
+                  style={styles.quantityButton}
+                >
+                  <Text style={styles.quantityButtonText}>+</Text>
                 </TouchableOpacity>
               </View>
             </View>
+
+            <TouchableOpacity
+              onPress={() => {
+                deleteCartItem(cartItem.id);
+              }}
+              style={{
+                padding: 10,
+                borderRadius: 10,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "red",
+                marginLeft: 10,
+                height: 45,
+                width: 45,
+              }}
+            >
+              <FontAwesome5 name="trash" size={20} color="white" />
+            </TouchableOpacity>
           </View>
         ))}
-
-        {/* Recommendations */}
-        <Text style={styles.recommendationsHeader}>Must-haves</Text>
-        <FlatList
-          horizontal
-          data={recommendations}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
-          showsHorizontalScrollIndicator={false}
-          style={styles.recommendationsList}
-        />
       </ScrollView>
 
       {/* Bottom Checkout - Sticky at the Bottom */}
       <View style={styles.bottomSection}>
-        <Text style={styles.totalAmount}>₹1798</Text>
+        <Text style={styles.totalAmount}>₹{totalAmount}</Text>
         <TouchableOpacity
           onPress={() => {
             navigation.navigate("Checkout");
@@ -216,8 +297,19 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   quantityButton: {
-    fontSize: 20,
-    paddingHorizontal: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 5,
+    padding: 8,
+    minWidth: 35,
+    alignItems: "center",
+  },
+  quantityButtonText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
   quantityText: {
     fontSize: 16,

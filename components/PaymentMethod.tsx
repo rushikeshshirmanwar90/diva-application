@@ -3,14 +3,23 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { RadioButton } from "react-native-paper";
 import { FontAwesome5 } from "@expo/vector-icons";
 
-const PaymentOptions = () => {
+interface PaymentOptionsProps {
+  onPaymentMethodChange: (method: string) => void;
+}
+
+const PaymentOptions: React.FC<PaymentOptionsProps> = ({ onPaymentMethodChange }) => {
   const [selectedPayment, setSelectedPayment] = useState("cards");
+
+  const handlePaymentChange = (method: string) => {
+    setSelectedPayment(method);
+    onPaymentMethodChange(method);
+  };
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.optionContainer}
-        onPress={() => setSelectedPayment("cards")}
+        onPress={() => handlePaymentChange("cards")}
       >
         <View style={styles.iconTextContainer}>
           <FontAwesome5 name="wallet" size={24} color="black" />
@@ -21,14 +30,13 @@ const PaymentOptions = () => {
         <RadioButton
           value="cards"
           status={selectedPayment === "cards" ? "checked" : "unchecked"}
-          onPress={() => setSelectedPayment("cards")}
+          onPress={() => handlePaymentChange("cards")}
         />
       </TouchableOpacity>
 
-      {/* Payment Option 2 */}
       <TouchableOpacity
         style={styles.optionContainer}
-        onPress={() => setSelectedPayment("cod")}
+        onPress={() => handlePaymentChange("cod")}
       >
         <View style={styles.iconTextContainer}>
           <FontAwesome5 name="money-bill-alt" size={24} color="black" />
@@ -37,7 +45,7 @@ const PaymentOptions = () => {
         <RadioButton
           value="cod"
           status={selectedPayment === "cod" ? "checked" : "unchecked"}
-          onPress={() => setSelectedPayment("cod")}
+          onPress={() => handlePaymentChange("cod")}
         />
       </TouchableOpacity>
     </View>
@@ -48,12 +56,6 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     backgroundColor: "white",
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: "#000",
   },
   optionContainer: {
     flexDirection: "row",

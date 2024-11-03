@@ -4,9 +4,7 @@ import ProductCard from "./utils/ProductCard";
 import { domain } from "./route/route";
 import { Product } from "../interface/Product";
 
-const CategorySection: React.FC<{navigation: any }> = ({
-  navigation,
-}) => {
+const CategorySection: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [productData, setProductData] = useState<Product[]>([]);
   const [productLoading, setProductLoading] = useState<boolean>(true);
 
@@ -17,6 +15,7 @@ const CategorySection: React.FC<{navigation: any }> = ({
           `${domain}/api/products?populate=*&filters[$and][0][gender][$eq]=female&filters[$and][1][feature][$eq]=true`
         );
         const data = await res.json();
+
         setProductData(data.data);
       } catch (e: any) {
         console.log(e.message);
@@ -36,10 +35,13 @@ const CategorySection: React.FC<{navigation: any }> = ({
     <View style={styles.flex}>
       {productData.map((item, index) => (
         <TouchableOpacity
-          onPress={() => {
-            navigation.navigate("Details", { id: item.id });
-          }}
           key={index}
+          onPress={() => {
+            navigation.navigate("Details", {
+              id: item.documentId,
+              item: item,
+            });
+          }}
         >
           <ProductCard navigation={navigation} item={item} />
         </TouchableOpacity>

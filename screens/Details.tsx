@@ -25,7 +25,9 @@ const Details: React.FC<{
   const [userId, setUserId] = useState<string>("");
 
   const route = useRoute();
-  const { id }: any = route.params;
+  const { id, item }: any = route.params;
+
+  console.log("Document Id : " + JSON.stringify(item));
 
   // GET THE PRODUCT DATA
   useEffect(() => {
@@ -38,8 +40,6 @@ const Details: React.FC<{
 
         const data: any = await response.json();
         setProduct(data.data);
-
-        console.log(data.data.images[0].url);
 
         // Map and set product images
         const mappedImages = data.data.images.map((item: any) => item.url);
@@ -206,8 +206,8 @@ const Details: React.FC<{
 
           {/* Review modal and cards */}
           <View>
-            <ReviewModal />
-            <ReviewCard />
+            <ReviewModal productId={id} />
+            <ReviewCard productId={id} />
           </View>
         </View>
       </ScrollView>
