@@ -87,10 +87,21 @@ const CartScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   }, [userId]);
 
   useEffect(() => {
-    const total = cartItems.reduce((sum, item) => {
-      return sum + item.price * item.quantity;
-    }, 0);
-    setTotalAmount(total);
+    const calculateAndStoreTotal = async () => {
+      const total = cartItems.reduce((sum, item) => {
+        return sum + (item.price * item.quantity);
+      }, 0);
+      setTotalAmount(total);
+      
+      // Store the total in AsyncStorage
+      try {
+        await AsyncStorage.setItem('@cartTotal', total.toString());
+      } catch (error) {
+        console.error('Error storing cart total:', error);
+      }
+    };
+
+    calculateAndStoreTotal();
   }, [cartItems]);
 
   const renderItem = ({ item }: { item: Recommendation }) => (

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,9 +11,12 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import PaymentOptions from "../components/PaymentMethod";
 import { FontAwesome } from "@expo/vector-icons"; // For the lock icon
+import { domain } from "../components/route/route";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Errors {
-  fullName?: string;
+  firstName?: string;
+  lastName?: string;
   addressLine1?: string;
   addressLine2?: string;
   pincode?: string;
@@ -23,25 +26,47 @@ interface Errors {
   email?: string;
 }
 
-const CheckoutScreen: React.FC = () => {
-  const [fullName, setFullName] = useState<string>("");
+const CheckoutScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
   const [addressLine1, setAddressLine1] = useState<string>("");
-  const [addressLine2, setAddressLine2] = useState<string>("");
   const [pincode, setPincode] = useState<string>("");
   const [city, setCity] = useState<string>("");
   const [state, setState] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [selectedPayment, setSelectedPayment] = useState<string>("cards");
+  const [userId, setUserId] = useState<string>("");
+  const [isUserAddressPresent, setIsUserAddressPresent] =
+    useState<boolean>(false);
+
+  const [billingId, setBillingId] = useState<number>();
 
   const [errors, setErrors] = useState<Errors>({});
+
+  const [cartTotal, setCartTotal] = useState<string>("0");
+
+  useEffect(() => {
+    const getCartTotal = async () => {
+      try {
+        const total = await AsyncStorage.getItem("@cartTotal");
+        if (total) {
+          setCartTotal(total);
+        }
+      } catch (error) {
+        console.error("Error retrieving cart total:", error);
+      }
+    };
+
+    getCartTotal();
+  }, []);
 
   const validateForm = (): boolean => {
     const newErrors: Errors = {};
 
-    if (!fullName) newErrors.fullName = "Full Name is required";
+    if (!firstName) newErrors.firstName = "First Name is required";
+    if (!lastName) newErrors.lastName = "Last Name is required";
     if (!addressLine1) newErrors.addressLine1 = "Address Line 1 is required";
-    if (!addressLine2) newErrors.addressLine2 = "Address Line 2 is required";
 
     const pincodeRegex = /^[1-9][0-9]{5}$/;
     if (!pincode) {
@@ -72,26 +97,109 @@ const CheckoutScreen: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handlePayNow = (): void => {
-    if (validateForm()) {
-      const formData = {
-        fullName,
-        addressLine1,
-        addressLine2,
-        pincode,
-        city,
-        state,
-        phone,
-        email,
-        paymentMethod: selectedPayment,
-      };
+  useEffect(() => {
+    const checkAddress = async () => {
+      const res = await fetch(
+        `${domain}/api/billing-addresses?filters[$and][0][user_id][$eq]=${userId}`
+      );
+      const data = await res.json();
 
-      console.log("Form Data:", JSON.stringify(formData, null, 2));
-      Alert.alert("Success", "Payment processed successfully");
-    } else {
-      Alert.alert("Error", "Please correct the errors before proceeding");
+      if (data.data.length > 0) {
+        setIsUserAddressPresent(true);
+        setBillingId(data.data[0].documentId);
+        setAddressLine1(data.data[0].address);
+        setFirstName(data.data[0].first_name);
+        setLastName(data.data[0].last_name);
+        setPincode(data.data[0].pincode);
+        setCity(data.data[0].city);
+        setPhone(data.data[0].phone_number);
+        setEmail(data.data[0].email);
+        setState(data.data[0].state);
+      }
+    };
+
+    checkAddress();
+  }, [userId]);
+
+  const handlePayNow = async () => {
+    try {
+      if (validateForm()) {
+        const formData = {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            address: addressLine1,
+            city: city,
+            pincode: pincode,
+            state: state,
+            country: "India",
+            email: email,
+            user_id: userId,
+            phone_number: Number(phone),
+          },
+        };
+
+        let response;
+        if (isUserAddressPresent) {
+          // Use PUT method to update existing address
+          response = await fetch(
+            `${domain}/api/billing-addresses/${billingId}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(formData),
+            }
+          );
+        } else {
+          // Use POST method to create new address
+          response = await fetch(`${domain}/api/billing-addresses`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+          });
+        }
+
+        if (response.ok) {
+          Alert.alert(
+            "Success",
+            isUserAddressPresent
+              ? "Billing address updated successfully"
+              : "Billing address saved successfully"
+          );
+          // You might want to navigate to the next screen or process payment here
+        } else {
+          const errorText = await response.text();
+          console.error("Error in response:", errorText);
+          Alert.alert("Error", "Failed to save billing address");
+        }
+      } else {
+        Alert.alert("Error", "Please correct the errors before proceeding");
+      }
+    } catch (error) {
+      console.error("Network or server error:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
     }
   };
+
+  // Get UserId
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const userId = await AsyncStorage.getItem("@userId");
+        if (userId) {
+          setUserId(userId);
+        }
+      } catch (error) {
+        console.error("Error retrieving user ID:", error);
+      }
+    };
+
+    checkUser();
+  }, []);
 
   return (
     <ScrollView contentContainerStyle={{ backgroundColor: "white" }}>
@@ -103,21 +211,38 @@ const CheckoutScreen: React.FC = () => {
         </View>
 
         <View style={{ padding: 15 }}>
-          <Text style={{ fontWeight: "bold" }}>Full Name*</Text>
+          <Text style={{ fontWeight: "bold" }}>First Name*</Text>
           <TextInput
             placeholder="eg: John Doe"
-            value={fullName}
-            onChangeText={setFullName}
+            value={firstName}
+            onChangeText={setFirstName}
             style={{
               borderWidth: 1,
-              borderColor: errors.fullName ? "red" : "#ccc",
+              borderColor: errors.firstName ? "red" : "#ccc",
               padding: 10,
               borderRadius: 8,
               marginVertical: 10,
             }}
           />
-          {errors.fullName && (
-            <Text style={{ color: "red" }}>{errors.fullName}</Text>
+          {errors.firstName && (
+            <Text style={{ color: "red" }}>{errors.firstName}</Text>
+          )}
+
+          <Text style={{ fontWeight: "bold" }}>Last Name*</Text>
+          <TextInput
+            placeholder="eg: John Doe"
+            value={lastName}
+            onChangeText={setLastName}
+            style={{
+              borderWidth: 1,
+              borderColor: errors.lastName ? "red" : "#ccc",
+              padding: 10,
+              borderRadius: 8,
+              marginVertical: 10,
+            }}
+          />
+          {errors.lastName && (
+            <Text style={{ color: "red" }}>{errors.lastName}</Text>
           )}
 
           <Text style={{ fontWeight: "bold" }}>
@@ -137,25 +262,6 @@ const CheckoutScreen: React.FC = () => {
           />
           {errors.addressLine1 && (
             <Text style={{ color: "red" }}>{errors.addressLine1}</Text>
-          )}
-
-          <Text style={{ fontWeight: "bold" }}>
-            Address Line 2 (House Number, Building)*
-          </Text>
-          <TextInput
-            placeholder="eg: House/Flat no"
-            value={addressLine2}
-            onChangeText={setAddressLine2}
-            style={{
-              borderWidth: 1,
-              borderColor: errors.addressLine2 ? "red" : "#ccc",
-              padding: 10,
-              borderRadius: 8,
-              marginVertical: 10,
-            }}
-          />
-          {errors.addressLine2 && (
-            <Text style={{ color: "red" }}>{errors.addressLine2}</Text>
           )}
 
           <Text style={{ fontWeight: "bold" }}>Pincode*</Text>
@@ -282,7 +388,7 @@ const CheckoutScreen: React.FC = () => {
       <View style={{ marginTop: 20 }}>
         <View style={styles.container}>
           {/* Price Text */}
-          <Text style={styles.priceText}>₹4495</Text>
+          <Text style={styles.priceText}>₹{cartTotal}</Text>
 
           {/* Pay Now Button */}
           <TouchableOpacity style={styles.payButton} onPress={handlePayNow}>

@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { domain } from "../../components/route/route";
 
 export const readCart = async () => {
@@ -9,7 +8,7 @@ export const readCart = async () => {
   return data.data;
 };
 
-export const addToCart = async (
+export const addToCart = async ( 
   productId: string,
   userId: string,
   product_name: string | undefined,

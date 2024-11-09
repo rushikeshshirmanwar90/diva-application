@@ -1,5 +1,5 @@
 import { Modal, StyleSheet, Text, View } from "react-native";
-import React, { useState } from "react";
+import React from "react";
 
 const Models: React.FC<{ showModal: boolean; modalMessage: string }> = ({
   showModal,
