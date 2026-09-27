@@ -1,20 +1,27 @@
 {
   "expo": {
-    "name": "diva-application",
+    "name": "Diva",
     "slug": "diva-application",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "divaapplication",
-    "userInterfaceStyle": "automatic",
+    "scheme": [
+      "diva",
+      "com.diva.jewel"
+    ],
+    "userInterfaceStyle": "light",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "supportsTablet": false,
+      "bundleIdentifier": "com.diva.jewel",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.diva.jewel",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
@@ -25,18 +32,40 @@
     },
     "plugins": [
       "expo-router",
+      "expo-secure-store",
+      "expo-web-browser",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#ffffff",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 180
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "node_modules/@expo-google-fonts/cormorant-garamond/300Light/CormorantGaramond_300Light.ttf",
+            "node_modules/@expo-google-fonts/cormorant-garamond/400Regular/CormorantGaramond_400Regular.ttf",
+            "node_modules/@expo-google-fonts/cormorant-garamond/500Medium/CormorantGaramond_500Medium.ttf",
+            "node_modules/@expo-google-fonts/cormorant-garamond/600SemiBold/CormorantGaramond_600SemiBold.ttf",
+            "node_modules/@expo-google-fonts/jost/300Light/Jost_300Light.ttf",
+            "node_modules/@expo-google-fonts/jost/400Regular/Jost_400Regular.ttf",
+            "node_modules/@expo-google-fonts/jost/500Medium/Jost_500Medium.ttf"
+          ]
         }
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
+      "typedRoutes": false,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "495c9558-d1a7-4f9a-a715-383cae219806"
+      }
     }
   }
 }

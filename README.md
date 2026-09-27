@@ -1,56 +1,62 @@
-# Welcome to your Expo app 👋
+# Diva — The Indian Jewel (mobile app)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+The Expo / React Native port of `diva-frontend`. Same catalogue, same copy, same
+design system — Cormorant Garamond + Jost, the gold/charcoal/beige palette,
+tracked uppercase eyebrows, square corners — laid out as the site renders at
+its mobile breakpoint: marquee announcement bar and header pinned on top,
+hamburger drawer, slide-in bag, full-screen search, footer at the end of every
+page.
 
-## Get started
+## Run it
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```sh
+npm install
+npx expo start          # then press i (iOS simulator), a (Android) or w (web)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Fonts are bundled through the `expo-font` config plugin (see `app.json`) and
+also loaded at runtime in `src/app/_layout.tsx`, so both Expo Go and a dev
+build render the brand typefaces.
 
-### Other setup steps
+## How it talks to the backend
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+There is no BFF proxy here. The app calls `diva-backend` directly
+(`API_ORIGIN` in `src/lib/config.ts` — a plain source file, not a `.env`; see
+that file for how to point it at a local backend) using the backend's mobile
+mode:
 
-## Learn more
+- `X-Client: mobile` on every request → sign-in answers with tokens in the
+  body instead of setting cookies (`lib/auth/deliver-session.ts` in the backend).
+- Tokens live in the Keychain / Keystore via `expo-secure-store`
+  (`src/lib/auth/token-store.ts`) and go out as `Authorization: Bearer`.
+- Bearer requests are exempt from the backend's CSRF check, so no CSRF token
+  is needed. A 401 triggers one deduplicated refresh and a replay
+  (`src/lib/api/client.ts`), exactly like the site's client.
 
-To learn more about developing your project with Expo, look at the following resources:
+On `expo start --web` the browser is subject to the backend's CORS allowlist;
+native builds are not.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Payments
 
-## Join the community
+Checkout creates the order and initiates PhonePe like the site does, then the
+`checkout/payment-return` screen opens the gateway in an in-app browser and
+polls `/payments/phonepe/status/:id` until it settles. COD orders confirm
+in-app without leaving.
 
-Join our community of developers creating universal apps.
+## Google sign-in
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+`expo-auth-session`'s Google provider produces the same id token the site's
+GIS button does. The web client id has a public default; set
+`GOOGLE_IOS_CLIENT_ID` / `GOOGLE_ANDROID_CLIENT_ID` in `src/lib/config.ts`
+(created in Google Cloud for `com.diva.jewel`) before shipping.
+
+## Layout
+
+```
+src/app/            expo-router screens — one per site route
+src/components/     layout / ui / home / product / shop / cart / checkout / auth / account
+src/lib/theme.ts    the design tokens, ported from the site's globals.css
+src/lib/api/        backend calls (client, auth, catalogue, checkout, …)
+src/lib/data/       catalogue context, site settings, policies, editorial content
+src/lib/store/      cart / wishlist / recently-viewed / coupon, persisted on device
+```

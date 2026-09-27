@@ -1,98 +1,91 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View } from "react-native";
+import { useCatalogue, useCatalogueState, useHeroSlides } from "@/lib/data/catalogue-context";
+import { byBadge } from "@/lib/data/product-helpers";
+import { byOccasion, getOccasionCollection } from "@/lib/data/occasions";
+import { Page, Container } from "@/components/layout/page";
+import { Hero, HeroSkeleton } from "@/components/home/hero";
+import { CategoryRail } from "@/components/home/category-rail";
+import { CollectionBanner, CollectionBannerSkeleton } from "@/components/home/collection-banner";
+import { PriceTiles } from "@/components/home/price-tiles";
+import { RecentlyViewedRail } from "@/components/home/recently-viewed-rail";
+import { Testimonials } from "@/components/home/testimonials";
+import { ProductGrid, ProductRail } from "@/components/product/product-grid";
+import { SectionHeading } from "@/components/ui/section-heading";
+import { ProductGridSkeleton } from "@/components/ui/skeleton";
+import { Reveal } from "@/components/ui/reveal";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
-
+/** The home page — the same sections, in the same order, as the site's `app/page.tsx`. */
 export default function HomeScreen() {
+  const catalogue = useCatalogue();
+  const heroSlides = useHeroSlides();
+  const { ready } = useCatalogueState();
+
+  const featured = byBadge(catalogue, "bestseller").slice(0, 4);
+  const newArrivals = [...catalogue].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 6);
+  /**
+   * The banner slot is the Wedding occasion edit, same as the site. A fixed
+   * entry in `lib/data/occasions.ts` rather than an admin-created collection,
+   * so it always exists — the only question is how many pieces are tagged in.
+   */
+  const wedding = getOccasionCollection("wedding");
+  const weddingCount = wedding ? byOccasion(catalogue, wedding).length : 0;
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <Page>
+      {ready ? (
+        <Reveal>
+          <Hero slides={heroSlides} />
+        </Reveal>
+      ) : (
+        <HeroSkeleton />
+      )}
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+      {ready ? (
+        <Reveal>
+          <RecentlyViewedRail />
+        </Reveal>
+      ) : null}
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+      <CategoryRail />
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      <Container style={{ paddingBottom: 32 }}>
+        {ready ? (
+          <Reveal style={{ marginTop: 40 }}>
+            <ProductGrid products={featured} />
+          </Reveal>
+        ) : (
+          <View style={{ marginTop: 40 }}>
+            <ProductGridSkeleton count={4} />
+          </View>
+        )}
+      </Container>
+
+      {ready ? (
+        wedding ? (
+          <Reveal>
+            <CollectionBanner collection={wedding} productCount={weddingCount} />
+          </Reveal>
+        ) : null
+      ) : (
+        <CollectionBannerSkeleton />
+      )}
+
+      <Container style={{ paddingVertical: 48 }}>
+        <SectionHeading eyebrow="Just arrived" title="New this season" href="/shop?sort=newest" linkLabel="See all new" align="between" />
+        <View style={{ marginTop: 40 }}>
+          {ready ? (
+            <Reveal>
+              <ProductRail products={newArrivals} />
+            </Reveal>
+          ) : (
+            <ProductGridSkeleton count={6} />
+          )}
+        </View>
+      </Container>
+
+      <PriceTiles />
+
+      <Testimonials />
+    </Page>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
-});
