@@ -2,19 +2,28 @@
   "expo": {
     "name": "Diva",
     "slug": "diva-application",
+    "owner": "codewithrushi",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": [
       "diva",
-      "com.diva.jewel"
+      "com.diva.jewel",
+      "com.googleusercontent.apps.192134530774-tlvmd4tnmmq4adv4sen7bjmf6a3no0n5"
     ],
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.diva.jewel",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.192134530774-tlvmd4tnmmq4adv4sen7bjmf6a3no0n5"
+            ]
+          }
+        ]
       }
     },
     "android": {
@@ -34,6 +43,12 @@
       "expo-router",
       "expo-secure-store",
       "expo-web-browser",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.192134530774-tlvmd4tnmmq4adv4sen7bjmf6a3no0n5"
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -65,6 +80,12 @@
       "router": {},
       "eas": {
         "projectId": "495c9558-d1a7-4f9a-a715-383cae219806"
+      },
+      "google": {
+        "webClientId": "192134530774-sd8gmcifhtiu88r08pt4huih7svfcvtm.apps.googleusercontent.com",
+        "iosClientId": "192134530774-tlvmd4tnmmq4adv4sen7bjmf6a3no0n5.apps.googleusercontent.com",
+        "androidClientId": "192134530774-ri3iq7r80o0dbsv6l0ts61blufnrkaom.apps.googleusercontent.com",
+        "iosUrlScheme": "com.googleusercontent.apps.192134530774-tlvmd4tnmmq4adv4sen7bjmf6a3no0n5"
       }
     }
   }

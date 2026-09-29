@@ -1,6 +1,5 @@
 import { View } from "react-native";
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
-import { Search } from "lucide-react-native";
 import { colors, shadow } from "@/lib/theme";
 import { useStoreActions, useStoreUI } from "@/lib/store/store";
 import { Logo } from "@/components/layout/logo";
@@ -8,19 +7,11 @@ import { IconButton } from "@/components/ui/icon-button";
 
 /**
  * The site's header at its mobile breakpoint: hamburger on the left, the logo
- * centred, search on the right. 64dp tall, hairline below.
- *
- * No wishlist or bag up here: both are a thumb away in the tab bar, and
- * repeating them at the top of the screen only crowds the logo. Reading only
- * the store's actions, which never change, means the header does not
- * re-render when the bag does.
- *
- * Home only — `Page` mounts it there and nowhere else.
+ * centred. 64dp tall, hairline below.
  */
 export function Header() {
-  const { setMenuOpen, setSearchOpen } = useStoreActions();
+  const { setMenuOpen } = useStoreActions();
   const { menuOpen } = useStoreUI();
-  const iconColor = colors.charcoal;
 
   return (
     <View
@@ -49,11 +40,8 @@ export function Header() {
         <Logo width={120} />
       </View>
 
-      <View style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 2 }}>
-        <IconButton label="Search" onPress={() => setSearchOpen(true)}>
-          <Search size={18} strokeWidth={1.5} color={iconColor} />
-        </IconButton>
-      </View>
+      {/* Spacer keeps the center logo balanced and centered */}
+      <View style={{ flex: 1 }} />
     </View>
   );
 }

@@ -7,7 +7,7 @@ import { colors, shadow } from "@/lib/theme";
 import { useCatalogueState } from "@/lib/data/catalogue-context";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Header } from "@/components/layout/header";
-import { BottomNav, useBottomNavVisible } from "@/components/layout/bottom-nav";
+import { useBottomNavVisible } from "@/components/layout/bottom-nav";
 import { Footer } from "@/components/layout/footer";
 import { IconButton } from "@/components/ui/icon-button";
 
@@ -27,6 +27,7 @@ export function Page({
   children,
   footer = true,
   back = false,
+  header,
   contentStyle,
   scrollRef,
 }: {
@@ -35,13 +36,19 @@ export function Page({
   footer?: boolean;
   /** A detail screen: shows a floating back arrow over the content. */
   back?: boolean;
+  /** Explicitly show or hide the header bar. Defaults to true on home, shop, and bag tabs. */
+  header?: boolean;
   contentStyle?: StyleProp<ViewStyle>;
   scrollRef?: React.Ref<ScrollView>;
 }) {
   const insets = useSafeAreaInsets();
   const { refreshing, refresh } = useCatalogueState();
   const tabs = useBottomNavVisible();
-  const home = usePathname() === "/";
+  const pathname = usePathname();
+  const home = pathname === "/";
+  const isShop = pathname === "/shop" || pathname.startsWith("/category") || pathname.startsWith("/collections") || pathname.startsWith("/for");
+  const isBag = pathname === "/cart";
+  const hasHeader = header ?? (!back && (home || isShop || isBag));
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.white }}>
@@ -54,6 +61,10 @@ export function Page({
           </View>
           <Header />
         </>
+      ) : hasHeader ? (
+        <View style={{ paddingTop: insets.top, backgroundColor: colors.white }}>
+          <Header />
+        </View>
       ) : (
         <View style={{ height: insets.top, backgroundColor: colors.white }} />
       )}
@@ -88,7 +99,6 @@ export function Page({
           </IconButton>
         </View>
       ) : null}
-      <BottomNav />
     </View>
   );
 }

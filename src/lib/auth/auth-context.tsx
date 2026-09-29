@@ -1,6 +1,43 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import * as Linking from "expo-linking";
 import * as authApi from "@/lib/api/auth";
 import type { Profile, RegisterInput, UpdateProfileInput } from "@/lib/api/auth";
+
+/**
+ * Extracts OAuth parameters (such as `id_token`, `error`, `error_description`)
+ * from either query parameters or hash fragments in deep links.
+ */
+function extractAuthParams(urlStr: string): { idToken?: string; error?: string; errorDescription?: string } {
+  if (!urlStr) return {};
+  let idToken: string | undefined;
+  let error: string | undefined;
+  let errorDescription: string | undefined;
+
+  try {
+    const parsed = new URL(urlStr, "https://phony.example");
+    const sp = parsed.searchParams;
+    const hp = parsed.hash ? new URLSearchParams(parsed.hash.replace(/^#/, "")) : null;
+
+    idToken = sp.get("id_token") ?? hp?.get("id_token") ?? undefined;
+    error = sp.get("error") ?? hp?.get("error") ?? undefined;
+    errorDescription = sp.get("error_description") ?? hp?.get("error_description") ?? undefined;
+  } catch {}
+
+  if (!idToken) {
+    const tokenMatch = urlStr.match(/[#?&]id_token=([^&]+)/);
+    if (tokenMatch) idToken = decodeURIComponent(tokenMatch[1]);
+  }
+  if (!error) {
+    const errorMatch = urlStr.match(/[#?&]error=([^&]+)/);
+    if (errorMatch) error = decodeURIComponent(errorMatch[1]);
+  }
+  if (!errorDescription) {
+    const descMatch = urlStr.match(/[#?&]error_description=([^&]+)/);
+    if (descMatch) errorDescription = decodeURIComponent(descMatch[1]);
+  }
+
+  return { idToken, error, errorDescription };
+}
 
 /**
  * Session state for the app.
@@ -30,6 +67,7 @@ const AuthContext = createContext<AuthValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [user, setUser] = useState<Profile | null>(null);
+  const handledTokenRef = useRef<string | null>(null);
 
   /**
    * Re-checks the session against `/auth/me` and updates `status`/`user`
@@ -76,6 +114,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     [hydrate],
   );
+
+  /**
+   * Captures OAuth redirects (such as Google Sign-In) that arrive via deep link.
+   * In Expo Go, receiving a deep link often reloads the app runtime; by inspecting
+   * `Linking.getInitialURL()`, we recover the `id_token` across that reload.
+   */
+  useEffect(() => {
+    const processUrl = async (url: string | null) => {
+      if (!url) return;
+      const { idToken, error, errorDescription } = extractAuthParams(url);
+      if (idToken && idToken !== handledTokenRef.current) {
+        handledTokenRef.current = idToken;
+        console.log("[AuthProvider] Found id_token from deep link/launch URL! Authenticating...");
+        try {
+          await loginWithGoogle(idToken);
+          console.log("[AuthProvider] Successfully authenticated via launch deep link!");
+        } catch (err) {
+          console.error("[AuthProvider] Failed to authenticate id_token from deep link:", err);
+        }
+      } else if (error) {
+        console.warn("[AuthProvider] OAuth redirect returned error:", error, errorDescription);
+      }
+    };
+
+    void Linking.getInitialURL().then((initialUrl) => {
+      if (initialUrl) {
+        void processUrl(initialUrl);
+      }
+    });
+
+    const sub = Linking.addEventListener("url", (event) => {
+      void processUrl(event.url);
+    });
+
+    return () => {
+      sub.remove();
+    };
+  }, [loginWithGoogle]);
 
   const register = useCallback(async (input: RegisterInput) => {
     const result = await authApi.register(input);

@@ -69,3 +69,17 @@ export const API_ORIGIN = "https://diva-backend.vercel.app";
 export const GOOGLE_WEB_CLIENT_ID = "192134530774-sd8gmcifhtiu88r08pt4huih7svfcvtm.apps.googleusercontent.com";
 export const GOOGLE_IOS_CLIENT_ID = "192134530774-tlvmd4tnmmq4adv4sen7bjmf6a3no0n5.apps.googleusercontent.com";
 export const GOOGLE_ANDROID_CLIENT_ID = "192134530774-ri3iq7r80o0dbsv6l0ts61blufnrkaom.apps.googleusercontent.com";
+
+/**
+ * Expo project credentials & Auth Proxy redirect URI.
+ *
+ * In Google Cloud Console under the WEB CLIENT ID:
+ * Authorized redirect URIs MUST include:
+ *   https://auth.expo.io/@codewithrushi/diva-application   (with the '@' prefix!)
+ *
+ * In Expo Go development mode, the app routes Google sign-in through this proxy
+ * using the Web client ID so that it doesn't fail native package verification.
+ */
+export const EXPO_OWNER = "codewithrushi";
+export const GOOGLE_EXPO_REDIRECT_URI = "https://auth.expo.io/@codewithrushi/diva-application";
+

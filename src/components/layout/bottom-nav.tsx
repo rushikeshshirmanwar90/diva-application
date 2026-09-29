@@ -59,7 +59,7 @@ const TABS: Tab[] = [
 ];
 
 /** Screens where the bar would only get in the way of finishing something. */
-const HIDDEN_ON = ["/checkout", "/order-confirmed"];
+const HIDDEN_ON = ["/checkout", "/order-confirmed", "/expo-auth-session"];
 
 /**
  * Whether the bar is on screen right now — `Page` reads this so its scroll

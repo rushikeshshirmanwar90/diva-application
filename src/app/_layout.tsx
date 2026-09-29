@@ -19,10 +19,13 @@ import { AuthProvider } from "@/lib/auth/auth-context";
 import { StoreProvider } from "@/lib/store/store";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { AppLoader } from "@/components/layout/app-loader";
+import { BottomNav } from "@/components/layout/bottom-nav";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { SearchOverlay } from "@/components/layout/search-overlay";
 import { Toaster } from "@/components/ui/toaster";
+import * as WebBrowser from "expo-web-browser";
 
+WebBrowser.maybeCompleteAuthSession();
 SplashScreen.preventAutoHideAsync();
 
 /**
@@ -59,23 +62,26 @@ export default function RootLayout() {
           <StoreProvider>
             <View style={{ flex: 1, backgroundColor: colors.white }}>
               <StatusBar style="light" />
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                  contentStyle: { backgroundColor: colors.white },
-                  // The platform's own push: the iOS slide with its edge
-                  // swipe-back (from anywhere on the screen, not just the
-                  // edge), and a slide on Android. A screen arriving from the
-                  // right reads as "went somewhere" in a way a fade never did.
-                  animation: Platform.OS === "ios" ? "default" : "slide_from_right",
-                  gestureEnabled: true,
-                  fullScreenGestureEnabled: true,
-                  // A screen underneath the one being pushed keeps its whole
-                  // tree mounted; without this, a store or catalogue update
-                  // re-renders every card on the previous screen mid-transition.
-                  freezeOnBlur: true,
-                }}
-              />
+              <View style={{ flex: 1 }}>
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: colors.white },
+                    // The platform's own push: the iOS slide with its edge
+                    // swipe-back (from anywhere on the screen, not just the
+                    // edge), and a slide on Android. A screen arriving from the
+                    // right reads as "went somewhere" in a way a fade never did.
+                    animation: Platform.OS === "ios" ? "default" : "slide_from_right",
+                    gestureEnabled: true,
+                    fullScreenGestureEnabled: true,
+                    // A screen underneath the one being pushed keeps its whole
+                    // tree mounted; without this, a store or catalogue update
+                    // re-renders every card on the previous screen mid-transition.
+                    freezeOnBlur: true,
+                  }}
+                />
+              </View>
+              <BottomNav />
               <CartDrawer />
               <MobileNav />
               <SearchOverlay />
