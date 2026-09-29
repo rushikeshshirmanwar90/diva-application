@@ -83,3 +83,18 @@ export const GOOGLE_ANDROID_CLIENT_ID = "192134530774-ri3iq7r80o0dbsv6l0ts61bluf
 export const EXPO_OWNER = "codewithrushi";
 export const GOOGLE_EXPO_REDIRECT_URI = "https://auth.expo.io/@codewithrushi/diva-application";
 
+// -----------------------------------------------------------------------
+// PhonePe Native SDK
+// -----------------------------------------------------------------------
+
+/**
+ * PhonePe Merchant ID and Environment for react-native-phonepe-pg SDK.
+ * In development / sandbox, defaults to UAT credentials.
+ * Update with your merchantId from the PhonePe Business Dashboard for production.
+ */
+export const PHONEPE_MERCHANT_ID = "M22R4Z1Z3LM02";
+export const PHONEPE_APP_ID = ""; // Optional PhonePe App ID
+export const PHONEPE_ENV: "SANDBOX" | "PRODUCTION" = "PRODUCTION";
+export const PHONEPE_ENABLE_LOGS = __DEV__;
+
+

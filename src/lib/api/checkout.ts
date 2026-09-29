@@ -87,6 +87,16 @@ export type InitiatedPayment = {
   amountPaise: number;
 };
 
+export type InitiatedSDKPayment = {
+  merchantId: string;
+  merchantTransactionId: string;
+  orderNumber: string;
+  amountPaise: number;
+  base64Body: string;
+  checksum: string;
+  environment: "SANDBOX" | "PRODUCTION";
+};
+
 export type PaymentStatus = {
   merchantTransactionId: string;
   orderNumber: string;
@@ -151,6 +161,17 @@ export function cancelOrder(orderNumber: string, reason?: string) {
 
 export function initiatePayment(orderNumber: string) {
   return apiFetch<InitiatedPayment>("/payments/phonepe/initiate", {
+    method: "POST",
+    body: { orderNumber },
+  });
+}
+
+/**
+ * Initiates payment via PhonePe's native React Native SDK (react-native-phonepe-pg).
+ * Returns the base64 payload and checksum for startTransaction().
+ */
+export function initiatePaymentSDK(orderNumber: string) {
+  return apiFetch<InitiatedSDKPayment>("/payments/phonepe/initiate-sdk", {
     method: "POST",
     body: { orderNumber },
   });

@@ -12,9 +12,11 @@ import {
   checkServiceability,
   createOrder,
   initiatePayment,
+  initiatePaymentSDK,
   type CheckoutPaymentMethod,
   type Serviceability,
 } from "@/lib/api/checkout";
+import { isPhonePeNativeAvailable, startPhonePeTransaction } from "@/lib/phonepe";
 import { formatPaise } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -169,6 +171,25 @@ export function CheckoutView() {
         clearCart();
         navigate(`/order-confirmed?order=${encodeURIComponent(order.orderNumber)}`, "replace");
         return;
+      }
+
+      if (isPhonePeNativeAvailable()) {
+        try {
+          const sdkPayment = await initiatePaymentSDK(order.orderNumber);
+          void startPhonePeTransaction({
+            merchantId: sdkPayment.merchantId,
+            base64Body: sdkPayment.base64Body,
+            checksum: sdkPayment.checksum,
+            environment: sdkPayment.environment,
+          });
+          navigate(
+            `/checkout/payment-return?ref=${encodeURIComponent(sdkPayment.merchantTransactionId)}`,
+            "replace",
+          );
+          return;
+        } catch (sdkError) {
+          console.warn("[checkout] SDK initiate failed, falling back to web flow:", sdkError);
+        }
       }
 
       const payment = await initiatePayment(order.orderNumber);

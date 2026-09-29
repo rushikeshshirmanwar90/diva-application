@@ -166,7 +166,11 @@ export function PaymentReturnView({ reference, gatewayUrl }: { reference: string
       icon={<Loader size={26} strokeWidth={1.4} color={colors.white} />}
       tone="neutral"
       title="Confirming your payment"
-      body="Please keep this screen open — this usually takes a few seconds. Complete the payment in the PhonePe window; you can close it once done."
+      body={
+        gatewayUrl
+          ? "Please keep this screen open — this usually takes a few seconds. Complete the payment in the PhonePe window; you can close it once done."
+          : "Please keep this screen open while we verify your transaction with PhonePe."
+      }
     >
       {gatewayUrl ? (
         <Button variant="outline" size="lg" onPress={() => void WebBrowser.openBrowserAsync(gatewayUrl)}>

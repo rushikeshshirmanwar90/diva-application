@@ -30,7 +30,7 @@ function parseAuthUrl(urlStr: string): Record<string, string> {
         params[key] = value;
       });
     }
-  } catch {}
+  } catch { }
 
   if (!params.id_token) {
     const tokenMatch = urlStr.match(/[#?&]id_token=([^&]+)/);

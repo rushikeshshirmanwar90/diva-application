@@ -17,9 +17,18 @@
       "bundleIdentifier": "com.diva.jewel",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": [
+          "ppmerchantsdk",
+          "phonepe",
+          "tez",
+          "paytmmp",
+          "bhim"
+        ],
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
+              "diva",
+              "com.diva.jewel",
               "com.googleusercontent.apps.192134530774-tlvmd4tnmmq4adv4sen7bjmf6a3no0n5"
             ]
           }
@@ -40,6 +49,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "./plugins/withPhonePe",
       "expo-router",
       "expo-secure-store",
       "expo-web-browser",
