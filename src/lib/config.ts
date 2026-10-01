@@ -88,13 +88,13 @@ export const GOOGLE_EXPO_REDIRECT_URI = "https://auth.expo.io/@codewithrushi/div
 // -----------------------------------------------------------------------
 
 /**
- * PhonePe Merchant ID and Environment for react-native-phonepe-pg SDK.
- * In development / sandbox, defaults to UAT credentials.
- * Update with your merchantId from the PhonePe Business Dashboard for production.
+ * Only the SDK log switch lives here now.
+ *
+ * The merchant id and environment are no longer client-side constants: they
+ * come back from `POST /payments/phonepe/initiate-sdk` alongside the order
+ * token, so the app and the backend can never disagree about which merchant
+ * account or environment a payment belongs to.
  */
-export const PHONEPE_MERCHANT_ID = "M22R4Z1Z3LM02";
-export const PHONEPE_APP_ID = ""; // Optional PhonePe App ID
-export const PHONEPE_ENV: "SANDBOX" | "PRODUCTION" = "PRODUCTION";
 export const PHONEPE_ENABLE_LOGS = __DEV__;
 
 

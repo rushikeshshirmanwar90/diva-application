@@ -92,8 +92,9 @@ export type InitiatedSDKPayment = {
   merchantTransactionId: string;
   orderNumber: string;
   amountPaise: number;
-  base64Body: string;
-  checksum: string;
+  /** PhonePe's order id and matching order token, both fed to startTransaction(). */
+  orderId: string;
+  token: string;
   environment: "SANDBOX" | "PRODUCTION";
 };
 
@@ -167,8 +168,10 @@ export function initiatePayment(orderNumber: string) {
 }
 
 /**
- * Initiates payment via PhonePe's native React Native SDK (react-native-phonepe-pg).
- * Returns the base64 payload and checksum for startTransaction().
+ * Initiates payment for PhonePe's native SDK (react-native-phonepe-pg v3).
+ *
+ * The same v2 order as `initiatePayment`, handed over as an order token rather
+ * than a URL. Used on native, where the hosted page can only offer a QR code.
  */
 export function initiatePaymentSDK(orderNumber: string) {
   return apiFetch<InitiatedSDKPayment>("/payments/phonepe/initiate-sdk", {

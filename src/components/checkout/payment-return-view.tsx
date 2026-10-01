@@ -24,7 +24,15 @@ import { Container } from "@/components/layout/page";
  */
 
 const POLL_INTERVAL_MS = 2500;
-const MAX_ATTEMPTS = 24; // ~60 seconds
+const MAX_ATTEMPTS = 24; // ~60 seconds, counted only once the customer is back
+
+/**
+ * While PhonePe's sheet is open the customer is still picking an app and
+ * entering a PIN. That time is not a stall, so it neither burns the ceiling
+ * above nor needs a fast cadence — the webhook settles the order either way.
+ */
+const PAYING_INTERVAL_MS = 5000;
+const PAYING_MAX_MS = 15 * 60_000;
 
 export function PaymentReturnView({ reference, gatewayUrl }: { reference: string | null; gatewayUrl: string | null }) {
   const navigate = useNavigate();
@@ -36,10 +44,18 @@ export function PaymentReturnView({ reference, gatewayUrl }: { reference: string
   const [attempt, setAttempt] = useState(0);
   const started = useRef(false);
 
+  const sheetOpen = useRef(false);
+  const openedAtMs = useRef(0);
+
   useEffect(() => {
-    if (gatewayUrl && !started.current) {
-      void WebBrowser.openBrowserAsync(gatewayUrl, { presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET }).catch(() => {});
-    }
+    if (!gatewayUrl || started.current) return;
+    sheetOpen.current = true;
+    openedAtMs.current = Date.now();
+    void WebBrowser.openBrowserAsync(gatewayUrl, { presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET })
+      .catch(() => {})
+      .finally(() => {
+        sheetOpen.current = false;
+      });
   }, [gatewayUrl]);
 
   useEffect(() => {
@@ -51,7 +67,9 @@ export function PaymentReturnView({ reference, gatewayUrl }: { reference: string
     let timer: ReturnType<typeof setTimeout> | undefined;
 
     const poll = async () => {
-      attempts += 1;
+      const paying = sheetOpen.current;
+      if (!paying) attempts += 1;
+
       try {
         const result = await paymentStatus(reference, controller.signal);
         setStatus(result);
@@ -69,6 +87,15 @@ export function PaymentReturnView({ reference, gatewayUrl }: { reference: string
       } catch (cause) {
         if (controller.signal.aborted) return;
         setError(errorMessage(cause));
+        return;
+      }
+
+      if (paying) {
+        if (Date.now() - openedAtMs.current >= PAYING_MAX_MS) {
+          setExhausted(true);
+          return;
+        }
+        timer = setTimeout(poll, PAYING_INTERVAL_MS);
         return;
       }
 

@@ -18,8 +18,11 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "LSApplicationQueriesSchemes": [
-          "ppmerchantsdk",
+          "ppemerchantsdkv1",
+          "ppemerchantsdkv2",
+          "ppemerchantsdkv3",
           "phonepe",
+          "gpay",
           "tez",
           "paytmmp",
           "bhim"
