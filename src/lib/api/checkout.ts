@@ -87,17 +87,6 @@ export type InitiatedPayment = {
   amountPaise: number;
 };
 
-export type InitiatedSDKPayment = {
-  merchantId: string;
-  merchantTransactionId: string;
-  orderNumber: string;
-  amountPaise: number;
-  /** PhonePe's order id and matching order token, both fed to startTransaction(). */
-  orderId: string;
-  token: string;
-  environment: "SANDBOX" | "PRODUCTION";
-};
-
 export type PaymentStatus = {
   merchantTransactionId: string;
   orderNumber: string;
@@ -162,19 +151,6 @@ export function cancelOrder(orderNumber: string, reason?: string) {
 
 export function initiatePayment(orderNumber: string) {
   return apiFetch<InitiatedPayment>("/payments/phonepe/initiate", {
-    method: "POST",
-    body: { orderNumber },
-  });
-}
-
-/**
- * Initiates payment for PhonePe's native SDK (react-native-phonepe-pg v3).
- *
- * The same v2 order as `initiatePayment`, handed over as an order token rather
- * than a URL. Used on native, where the hosted page can only offer a QR code.
- */
-export function initiatePaymentSDK(orderNumber: string) {
-  return apiFetch<InitiatedSDKPayment>("/payments/phonepe/initiate-sdk", {
     method: "POST",
     body: { orderNumber },
   });

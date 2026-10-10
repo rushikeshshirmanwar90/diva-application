@@ -83,18 +83,4 @@ export const GOOGLE_ANDROID_CLIENT_ID = "192134530774-ri3iq7r80o0dbsv6l0ts61bluf
 export const EXPO_OWNER = "codewithrushi";
 export const GOOGLE_EXPO_REDIRECT_URI = "https://auth.expo.io/@codewithrushi/diva-application";
 
-// -----------------------------------------------------------------------
-// PhonePe Native SDK
-// -----------------------------------------------------------------------
-
-/**
- * Only the SDK log switch lives here now.
- *
- * The merchant id and environment are no longer client-side constants: they
- * come back from `POST /payments/phonepe/initiate-sdk` alongside the order
- * token, so the app and the backend can never disagree about which merchant
- * account or environment a payment belongs to.
- */
-export const PHONEPE_ENABLE_LOGS = __DEV__;
-
 
