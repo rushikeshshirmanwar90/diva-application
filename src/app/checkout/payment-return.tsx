@@ -5,6 +5,8 @@ import { PaymentReturnView } from "@/components/checkout/payment-return-view";
 /**
  * `?ref=` is the merchant transaction id, `?url=` the PhonePe page. Nothing in
  * the params is trusted — the screen asks our server what the gateway says.
+ * The website's `/app-return` links back here as
+ * `diva://checkout/payment-return?ref=…`, with no `url`.
  */
 export default function PaymentReturnScreen() {
   const { ref, url } = useLocalSearchParams<{ ref?: string; url?: string }>();

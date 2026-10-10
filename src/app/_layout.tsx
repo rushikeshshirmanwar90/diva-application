@@ -79,7 +79,23 @@ export default function RootLayout() {
                     // re-renders every card on the previous screen mid-transition.
                     freezeOnBlur: true,
                   }}
-                />
+                >
+                  {/*
+                    Naming a screen here moves it ahead of the unnamed ones, so
+                    `index` is named first to stay the first route.
+
+                    One payment-return screen per payment: the browser hands the
+                    customer back with `diva://checkout/payment-return?ref=…`,
+                    and that link must reuse the screen already polling for that
+                    ref (even if they've since moved on) rather than push a
+                    second one with its own loop.
+                  */}
+                  <Stack.Screen name="index" />
+                  <Stack.Screen
+                    name="checkout/payment-return"
+                    dangerouslySingular={(_name, params) => (typeof params.ref === "string" ? params.ref : undefined)}
+                  />
+                </Stack>
               </View>
               <BottomNav />
               <CartDrawer />

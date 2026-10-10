@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { View } from "react-native";
-import * as WebBrowser from "expo-web-browser";
+import { AppState, Linking, View } from "react-native";
 import { AlertTriangle, Loader, RefreshCw } from "lucide-react-native";
 import { colors } from "@/lib/theme";
 import { useStore } from "@/lib/store/store";
@@ -15,87 +14,112 @@ import { Container } from "@/components/layout/page";
 
 /**
  * Confirms a payment. On the site this page is where PhonePe redirects the
- * browser back to; here it also *opens* PhonePe (in an in-app browser) and
- * keeps polling our status endpoint whether or not the customer comes back
- * through the browser — closing the sheet is fine, the poll continues.
+ * browser back to; here it also *opens* PhonePe, in the phone's own browser,
+ * and keeps polling our status endpoint whether or not the customer comes back
+ * through the browser. PhonePe returns that browser to the website's
+ * `/app-return`, which links to `diva://checkout/payment-return?ref=…` — the
+ * same screen, minus `url`. The root layout makes this screen singular per
+ * `ref`, so that link updates this instance rather than stacking a second one
+ * with a second polling loop; switching back by hand works just as well.
  *
  * It never decides anything itself: the backend asks PhonePe, and the webhook
- * settles the order server-side regardless.
+ * settles the order server-side regardless. Nothing in the route params is
+ * trusted beyond being the reference to ask about.
  */
 
 const POLL_INTERVAL_MS = 2500;
 const MAX_ATTEMPTS = 24; // ~60 seconds, counted only once the customer is back
 
 /**
- * While PhonePe's sheet is open the customer is still picking an app and
- * entering a PIN. That time is not a stall, so it neither burns the ceiling
- * above nor needs a fast cadence — the webhook settles the order either way.
+ * While the app is in the background the customer is in the browser or a UPI
+ * app, still picking an app and entering a PIN. That time is not a stall, so it
+ * neither burns the ceiling above nor needs a fast cadence — the webhook
+ * settles the order either way, and the OS may pause these timers regardless.
  */
 const PAYING_INTERVAL_MS = 5000;
 const PAYING_MAX_MS = 15 * 60_000;
 
-export function PaymentReturnView({ reference, gatewayUrl }: { reference: string | null; gatewayUrl: string | null }) {
+export function PaymentReturnView({ reference, gatewayUrl: gatewayUrlParam }: { reference: string | null; gatewayUrl: string | null }) {
   const navigate = useNavigate();
   const { clearCart } = useStore();
+
+  // The link back from the browser carries no `url`; keep the one this screen
+  // opened so "Reopen PhonePe" survives that param update.
+  const [gatewayUrl] = useState(gatewayUrlParam);
 
   const [status, setStatus] = useState<PaymentStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [exhausted, setExhausted] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const started = useRef(false);
 
-  const sheetOpen = useRef(false);
-  const openedAtMs = useRef(0);
+  // Once per mount: re-renders and React's development double-effect must not
+  // send the customer to PhonePe a second time.
+  const opened = useRef(false);
 
   useEffect(() => {
-    if (!gatewayUrl || started.current) return;
-    sheetOpen.current = true;
-    openedAtMs.current = Date.now();
-    void WebBrowser.openBrowserAsync(gatewayUrl, { presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET })
-      .catch(() => {})
-      .finally(() => {
-        sheetOpen.current = false;
-      });
+    if (!gatewayUrl || opened.current) return;
+    opened.current = true;
+    void Linking.openURL(gatewayUrl).catch(() => {});
   }, [gatewayUrl]);
 
   useEffect(() => {
     if (!reference) return;
-    started.current = true;
 
     const controller = new AbortController();
-    let attempts = 0;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let attempts = 0;
+    let inFlight = false;
+    let pollOnReturn = false;
+    // SUCCESS, FAILED or an error: nothing further to ask.
+    let settled = false;
+    let backgroundedAt: number | null = AppState.currentState === "active" ? null : Date.now();
+
+    const schedule = (delayMs: number) => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => void poll(), delayMs);
+    };
 
     const poll = async () => {
-      const paying = sheetOpen.current;
-      if (!paying) attempts += 1;
+      if (settled || inFlight) return;
+      inFlight = true;
+      if (backgroundedAt === null) attempts += 1;
 
       try {
         const result = await paymentStatus(reference, controller.signal);
         setStatus(result);
 
         if (result.status === "SUCCESS") {
+          settled = true;
           clearCart();
-          WebBrowser.dismissBrowser();
           navigate(`/order-confirmed?order=${encodeURIComponent(result.orderNumber)}`, "replace");
           return;
         }
         if (result.status === "FAILED") {
-          WebBrowser.dismissBrowser();
+          settled = true;
           return;
         }
       } catch (cause) {
         if (controller.signal.aborted) return;
+        settled = true;
         setError(errorMessage(cause));
+        return;
+      } finally {
+        inFlight = false;
+      }
+
+      // The customer came back while that request was in flight.
+      if (pollOnReturn) {
+        pollOnReturn = false;
+        schedule(0);
         return;
       }
 
-      if (paying) {
-        if (Date.now() - openedAtMs.current >= PAYING_MAX_MS) {
+      if (backgroundedAt !== null) {
+        if (Date.now() - backgroundedAt >= PAYING_MAX_MS) {
           setExhausted(true);
           return;
         }
-        timer = setTimeout(poll, PAYING_INTERVAL_MS);
+        schedule(PAYING_INTERVAL_MS);
         return;
       }
 
@@ -103,12 +127,33 @@ export function PaymentReturnView({ reference, gatewayUrl }: { reference: string
         setExhausted(true);
         return;
       }
-      timer = setTimeout(poll, POLL_INTERVAL_MS);
+      schedule(POLL_INTERVAL_MS);
     };
+
+    const subscription = AppState.addEventListener("change", (next) => {
+      if (next !== "active") {
+        backgroundedAt ??= Date.now();
+        return;
+      }
+      if (backgroundedAt === null) return;
+
+      // Back from the browser: ask now, then at the fast cadence with a fresh
+      // ceiling — also resuming a loop that had already given up.
+      backgroundedAt = null;
+      attempts = 0;
+      if (settled) return;
+      setExhausted(false);
+      if (inFlight) {
+        pollOnReturn = true;
+        return;
+      }
+      schedule(0);
+    });
 
     void poll();
 
     return () => {
+      subscription.remove();
       controller.abort();
       if (timer) clearTimeout(timer);
     };
@@ -195,12 +240,12 @@ export function PaymentReturnView({ reference, gatewayUrl }: { reference: string
       title="Confirming your payment"
       body={
         gatewayUrl
-          ? "Please keep this screen open — this usually takes a few seconds. Complete the payment in the PhonePe window; you can close it once done."
+          ? "Complete the payment in your browser, then come back to the app — this screen updates on its own. If you've completed payment, your order will be confirmed automatically."
           : "Please keep this screen open while we verify your transaction with PhonePe."
       }
     >
       {gatewayUrl ? (
-        <Button variant="outline" size="lg" onPress={() => void WebBrowser.openBrowserAsync(gatewayUrl)}>
+        <Button variant="outline" size="lg" onPress={() => void Linking.openURL(gatewayUrl).catch(() => {})}>
           Reopen PhonePe
         </Button>
       ) : null}
