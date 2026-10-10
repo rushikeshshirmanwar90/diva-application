@@ -4,7 +4,25 @@ This document summarizes the issues encountered during the build and payment pro
 
 ---
 
+## Current flow: PhonePe web checkout in the system browser
+
+The app no longer uses PhonePe's native SDK. `react-native-phonepe-pg`, `src/lib/phonepe.ts`, the `withPhonePe` config plugin and the `ppemerchantsdkv*` iOS query schemes have all been removed. The backend's `/payments/phonepe/initiate-sdk` endpoint still exists but the app does not call it.
+
+1. `checkout-view.tsx`: `createOrder` → `initiatePayment(orderNumber)` → navigate to `/checkout/payment-return?ref=<merchantTransactionId>&url=<PhonePe redirectUrl>`.
+2. The app sends `X-Client: mobile`, so the backend sets PhonePe's `redirectUrl` to `<STOREFRONT_URL>/app-return?ref=<merchantTransactionId>`. It always uses the configured `STOREFRONT_URL`, never a request origin.
+3. `payment-return-view.tsx` opens the PhonePe URL once with `Linking.openURL`, in the phone's **own browser**, not an in-app sheet. While the app is in the background it polls `/payments/phonepe/status/:id` every 5 s for up to 15 minutes. When the app becomes active again it polls immediately, then every 2.5 s for up to 24 attempts.
+4. After payment, PhonePe sends the browser to the website's `/app-return`. That page makes no API calls and needs no login; it only links to `diva://checkout/payment-return?ref=…` (an `intent://` link on Android). It tries automatically and also shows an "Open the Diva app" button, because browsers often block a custom-scheme open that no tap started.
+5. That link reuses the existing payment-return screen (`dangerouslySingular` keyed by `ref` in `src/app/_layout.tsx`) rather than stacking a second screen with a second poll. Switching back to the app by hand works too: the `AppState` change triggers the poll.
+
+Nothing from the browser or the URL settles an order. Only the backend's status check, the PhonePe webhook and the reconciliation sweep do (`settleFromGateway`).
+
+**Open question to test on a real phone:** the SDK was originally added because PhonePe's hosted page, inside an *in-app* browser, showed only a QR code instead of UPI app buttons. It has not been verified whether the phone's own browser (Chrome / Safari) shows the UPI app options. Test this before release.
+
+---
+
 ## 1. Kotlin Compilation Failure (`react-native-phonepe-pg`)
+
+> **No longer applies.** `react-native-phonepe-pg` has been removed from the app (see "Current flow" above), so this patch and section 2 are historical.
 
 ### Error Log
 ```text
@@ -77,7 +95,7 @@ Initial patch file header formatting and hunk line counts did not strictly match
      "replace",
    );
    ```
-2. **In-App Browser Flow**:
+2. **In-App Browser Flow** (since replaced by the system-browser flow described in "Current flow" above):
    - `initiatePayment()` obtains the official v2 `redirectUrl` (`https://mercury.phonepe.com/...`).
    - `PaymentReturnView` opens this URL inside an in-app browser sheet (`expo-web-browser`).
    - PhonePe's official checkout UI handles all UPI options (GPay, PhonePe, Paytm, BHIM), Credit/Debit Cards, NetBanking, and Wallets.
