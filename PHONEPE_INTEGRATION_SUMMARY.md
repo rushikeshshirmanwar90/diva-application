@@ -4,25 +4,32 @@ This document summarizes the issues encountered during the build and payment pro
 
 ---
 
-## Current flow: PhonePe web checkout in the system browser
+## Current flow: PhonePe native SDK, inside the app
 
-The app no longer uses PhonePe's native SDK. `react-native-phonepe-pg`, `src/lib/phonepe.ts`, the `withPhonePe` config plugin and the `ppemerchantsdkv*` iOS query schemes have all been removed. The backend's `/payments/phonepe/initiate-sdk` endpoint still exists but the app does not call it.
+Payment runs inside the app with `react-native-phonepe-pg` v3 (PhonePe Standard Checkout v2). There is no browser involved, and PhonePe can hand off straight to an installed UPI app.
 
-1. `checkout-view.tsx`: `createOrder` → `initiatePayment(orderNumber)` → navigate to `/checkout/payment-return?ref=<merchantTransactionId>&url=<PhonePe redirectUrl>`.
-2. The app sends `X-Client: mobile`, so the backend sets PhonePe's `redirectUrl` to `<STOREFRONT_URL>/app-return?ref=<merchantTransactionId>`. It always uses the configured `STOREFRONT_URL`, never a request origin.
-3. `payment-return-view.tsx` opens the PhonePe URL once with `Linking.openURL`, in the phone's **own browser**, not an in-app sheet. While the app is in the background it polls `/payments/phonepe/status/:id` every 5 s for up to 15 minutes. When the app becomes active again it polls immediately, then every 2.5 s for up to 24 attempts.
-4. After payment, PhonePe sends the browser to the website's `/app-return`. That page makes no API calls and needs no login; it only links to `diva://checkout/payment-return?ref=…` (an `intent://` link on Android). It tries automatically and also shows an "Open the Diva app" button, because browsers often block a custom-scheme open that no tap started.
-5. That link reuses the existing payment-return screen (`dangerouslySingular` keyed by `ref` in `src/app/_layout.tsx`) rather than stacking a second screen with a second poll. Switching back to the app by hand works too: the `AppState` change triggers the poll.
+1. `checkout-view.tsx`: `createOrder` → `initiatePaymentSDK(orderNumber)` (backend `POST /payments/phonepe/initiate-sdk`, which calls PhonePe's `/checkout/v2/sdk/order`) → `payWithPhonePe()` in `src/lib/phonepe.ts`, which runs `init()` then `startTransaction()` with `{ orderId, merchantId, token, paymentMode: { type: "PAY_PAGE" } }`.
+2. Whatever the SDK reports, the app navigates to `/checkout/payment-return?ref=<merchantTransactionId>`, which polls `/payments/phonepe/status/:id`. If the SDK did not report `SUCCESS`, the URL also carries `&sdk=incomplete`. After about 10 s without a result, the screen then shows "Payment not completed" with "Try paying again", instead of waiting 60 s. That hint only changes the screen; it never marks the order failed.
+3. Only the backend settles an order: the status check, the PhonePe webhook, or the reconciliation sweep (`settleFromGateway`).
 
-Nothing from the browser or the URL settles an order. Only the backend's status check, the PhonePe webhook and the reconciliation sweep do (`settleFromGateway`).
+### Native setup: `plugins/withPhonePe.js`
 
-**Open question to test on a real phone:** the SDK was originally added because PhonePe's hosted page, inside an *in-app* browser, showed only a QR code instead of UPI app buttons. It has not been verified whether the phone's own browser (Chrome / Safari) shows the UPI app options. Test this before release.
+The library leaves out native setup that it needs. The config plugin adds it at prebuild:
+
+- **Android, Maven repo:** PhonePe's repository, `https://phonepe.mycloudrepo.io/public/repositories/phonepe-intentsdk-android`, for `IntentSDK` 5.3.1.
+- **Android, intermediate activity (the bug that stopped the SDK working):** `startTransaction` launches `com.phonepepaymentsdk.PhonePeSDKIntermediateActivity`. Neither the library's manifest nor IntentSDK's declares it, so without this every payment failed with "Unable to find explicit activity class" before PhonePe opened. The plugin declares it with `exported="false"` and the SDK's `@style/phonepeThemeInvisibleCompat` theme, which it needs because it is an AppCompat activity.
+- **iOS, AppDelegate:** posts `ApplicationOpenURLNotification` with `userInfo["openUrl"]` from `application(_:open:options:)`, as PhonePe's setup guide requires, so the SDK regains control after a UPI app returns to `diva://`.
+- **iOS, `app.json`:** `LSApplicationQueriesSchemes` includes `ppemerchantsdkv1/v2/v3`, plus the UPI app schemes.
+
+The SDK only exists in a development or EAS build made after this plugin ran. Expo Go and web builds have no native module, so they fall back to PhonePe's hosted page in the phone's browser, with the backend returning that browser to the website's `/app-return`. A server without SDK credentials (`initiate-sdk` answers 503) falls back the same way.
+
+After changing the plugin, rebuild natively. Locally, run `npx expo prebuild --clean` first; EAS regenerates the native projects itself.
 
 ---
 
 ## 1. Kotlin Compilation Failure (`react-native-phonepe-pg`)
 
-> **No longer applies.** `react-native-phonepe-pg` has been removed from the app (see "Current flow" above), so this patch and section 2 are historical.
+> **No longer applies.** `react-native-phonepe-pg` v3 no longer implements `ActivityEventListener` (it uses `PhonePeSDKIntermediateActivity` instead), so it compiles on RN 0.86 without a patch. This section and section 2 are historical.
 
 ### Error Log
 ```text
@@ -95,7 +102,7 @@ Initial patch file header formatting and hunk line counts did not strictly match
      "replace",
    );
    ```
-2. **In-App Browser Flow** (since replaced by the system-browser flow described in "Current flow" above):
+2. **In-App Browser Flow** (historical; the app now pays with the native SDK, see "Current flow" above):
    - `initiatePayment()` obtains the official v2 `redirectUrl` (`https://mercury.phonepe.com/...`).
    - `PaymentReturnView` opens this URL inside an in-app browser sheet (`expo-web-browser`).
    - PhonePe's official checkout UI handles all UPI options (GPay, PhonePe, Paytm, BHIM), Credit/Debit Cards, NetBanking, and Wallets.
