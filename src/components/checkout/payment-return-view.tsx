@@ -14,21 +14,26 @@ import { Container } from "@/components/layout/page";
 
 /**
  * Confirms a payment. On the site this page is where PhonePe redirects the
- * browser back to; here it also *opens* PhonePe, in the phone's own browser,
- * and keeps polling our status endpoint whether or not the customer comes back
- * through the browser. PhonePe returns that browser to the website's
- * `/app-return`, which links to `diva://checkout/payment-return?ref=…` — the
- * same screen, minus `url`. The root layout makes this screen singular per
- * `ref`, so that link updates this instance rather than stacking a second one
- * with a second polling loop; switching back by hand works just as well.
+ * browser back to. In the app it is where checkout lands once PhonePe's native
+ * SDK hands back, and it polls our status endpoint for the real outcome.
+ *
+ * Builds without the SDK (Expo Go, web) arrive with `url` instead: this screen
+ * opens PhonePe in the phone's own browser and keeps polling whether or not
+ * the customer comes back through it. PhonePe returns that browser to the
+ * website's `/app-return`, which links to `diva://checkout/payment-return?ref=…`
+ * — the same screen, minus `url`. The root layout makes this screen singular
+ * per `ref`, so that link updates this instance rather than stacking a second
+ * one with a second polling loop; switching back by hand works just as well.
  *
  * It never decides anything itself: the backend asks PhonePe, and the webhook
  * settles the order server-side regardless. Nothing in the route params is
- * trusted beyond being the reference to ask about.
+ * trusted beyond being the reference to ask about — `incomplete` (the SDK
+ * said the customer backed out) only shortens the wait before offering a retry.
  */
 
 const POLL_INTERVAL_MS = 2500;
 const MAX_ATTEMPTS = 24; // ~60 seconds, counted only once the customer is back
+const INCOMPLETE_MAX_ATTEMPTS = 4; // ~10 seconds, in case the payment went through anyway
 
 /**
  * While the app is in the background the customer is in the browser or a UPI
@@ -39,7 +44,15 @@ const MAX_ATTEMPTS = 24; // ~60 seconds, counted only once the customer is back
 const PAYING_INTERVAL_MS = 5000;
 const PAYING_MAX_MS = 15 * 60_000;
 
-export function PaymentReturnView({ reference, gatewayUrl: gatewayUrlParam }: { reference: string | null; gatewayUrl: string | null }) {
+export function PaymentReturnView({
+  reference,
+  gatewayUrl: gatewayUrlParam,
+  incomplete = false,
+}: {
+  reference: string | null;
+  gatewayUrl: string | null;
+  incomplete?: boolean;
+}) {
   const navigate = useNavigate();
   const { clearCart } = useStore();
 
@@ -123,7 +136,7 @@ export function PaymentReturnView({ reference, gatewayUrl: gatewayUrlParam }: { 
         return;
       }
 
-      if (attempts >= MAX_ATTEMPTS) {
+      if (attempts >= (incomplete ? INCOMPLETE_MAX_ATTEMPTS : MAX_ATTEMPTS)) {
         setExhausted(true);
         return;
       }
@@ -157,7 +170,7 @@ export function PaymentReturnView({ reference, gatewayUrl: gatewayUrlParam }: { 
       controller.abort();
       if (timer) clearTimeout(timer);
     };
-  }, [reference, clearCart, navigate, attempt]);
+  }, [reference, incomplete, clearCart, navigate, attempt]);
 
   if (!reference) {
     return (
@@ -209,6 +222,29 @@ export function PaymentReturnView({ reference, gatewayUrl: gatewayUrlParam }: { 
           </Button>
           <Button href="/cart" variant="outline" size="lg">
             Back to bag
+          </Button>
+        </View>
+      </Shell>
+    );
+  }
+
+  if (exhausted && incomplete) {
+    return (
+      <Shell
+        icon={<AlertTriangle size={26} strokeWidth={1.4} color={colors.white} />}
+        tone="error"
+        title="Payment not completed"
+        body="The payment was not completed in PhonePe. If money did leave your account, your order will be confirmed automatically — check Orders in a few minutes."
+      >
+        <Sans size={12} color={colors.muted} align="center" style={{ marginBottom: 24 }}>
+          Your bag is still intact. Reference <Sans size={12}>{reference}</Sans>
+        </Sans>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 12 }}>
+          <Button href="/checkout" variant="gold" size="lg">
+            Try paying again
+          </Button>
+          <Button href="/account/orders" variant="outline" size="lg">
+            View my orders
           </Button>
         </View>
       </Shell>

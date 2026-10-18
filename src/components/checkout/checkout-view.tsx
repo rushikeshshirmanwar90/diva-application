@@ -6,15 +6,17 @@ import { colors } from "@/lib/theme";
 import { cdnImage, IMG } from "@/lib/images";
 import { useStore } from "@/lib/store/store";
 import { useAuth } from "@/lib/auth/auth-context";
-import { errorMessage } from "@/lib/api/client";
+import { ApiError, errorMessage } from "@/lib/api/client";
 import { createAddress, listAddresses, type Address } from "@/lib/api/addresses";
 import {
   checkServiceability,
   createOrder,
   initiatePayment,
+  initiatePaymentSDK,
   type CheckoutPaymentMethod,
   type Serviceability,
 } from "@/lib/api/checkout";
+import { isPhonePeNativeAvailable, payWithPhonePe } from "@/lib/phonepe";
 import { formatPaise } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -30,9 +32,12 @@ import { Container } from "@/components/layout/page";
  * Two-step checkout: address → payment. A port of the site's `CheckoutView`.
  *
  * The difference is the handoff. The site sets `window.location` to PhonePe;
- * here the `checkout/payment-return` screen opens PhonePe's hosted page in the
- * phone's own browser and polls for the outcome. PhonePe then sends that
- * browser to the website's `/app-return`, which links back into the app.
+ * the app runs PhonePe's native SDK, so the payment happens inside the app and
+ * can hand off straight to an installed UPI app. Whatever the SDK reports, the
+ * `checkout/payment-return` screen then asks our server for the real outcome.
+ *
+ * Only a build without the native module (Expo Go, web) falls back to PhonePe's
+ * hosted page in the phone's browser.
  */
 
 const steps = ["Address", "Payment"] as const;
@@ -169,6 +174,38 @@ export function CheckoutView() {
       if (paymentMethod === "COD") {
         clearCart();
         navigate(`/order-confirmed?order=${encodeURIComponent(order.orderNumber)}`, "replace");
+        return;
+      }
+
+      // A 503 means the server has no SDK credentials. It answers that before
+      // touching the order, so the hosted page below is still a safe fallback.
+      const sdk = isPhonePeNativeAvailable()
+        ? await initiatePaymentSDK(order.orderNumber).catch((cause: unknown) => {
+            if (cause instanceof ApiError && cause.status === 503) return null;
+            throw cause;
+          })
+        : null;
+
+      if (sdk) {
+        const result = await payWithPhonePe({
+          merchantId: sdk.merchantId,
+          orderId: sdk.orderId,
+          token: sdk.token,
+          environment: sdk.environment,
+          flowId: sdk.merchantTransactionId,
+        });
+
+        // Even SUCCESS is only the SDK's word for it. The return screen asks
+        // our server, which asks PhonePe — the customer's device never decides.
+        // `incomplete` only shortens how long that screen waits before
+        // offering a retry; it never marks anything failed.
+        const ref = encodeURIComponent(sdk.merchantTransactionId);
+        navigate(
+          result.status === "SUCCESS"
+            ? `/checkout/payment-return?ref=${ref}`
+            : `/checkout/payment-return?ref=${ref}&sdk=incomplete`,
+          "replace",
+        );
         return;
       }
 
