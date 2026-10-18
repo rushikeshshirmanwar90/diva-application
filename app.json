@@ -18,6 +18,9 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "LSApplicationQueriesSchemes": [
+          "ppemerchantsdkv1",
+          "ppemerchantsdkv2",
+          "ppemerchantsdkv3",
           "phonepe",
           "gpay",
           "tez",
@@ -49,6 +52,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "./plugins/withPhonePe",
       "expo-router",
       "expo-secure-store",
       "expo-web-browser",
