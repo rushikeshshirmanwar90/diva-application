@@ -80,6 +80,13 @@ export type Order = {
   createdAt: string;
 };
 
+export type InitiatedPayment = {
+  merchantTransactionId: string;
+  redirectUrl: string;
+  orderNumber: string;
+  amountPaise: number;
+};
+
 export type InitiatedSDKPayment = {
   merchantId: string;
   merchantTransactionId: string;
@@ -154,11 +161,22 @@ export function cancelOrder(orderNumber: string, reason?: string) {
 }
 
 /**
+ * Initiates PhonePe's hosted checkout. The app shows the returned page in its
+ * own WebView (`checkout/pay`), never the phone's browser; it is used when the
+ * build has no native SDK.
+ */
+export function initiatePayment(orderNumber: string) {
+  return apiFetch<InitiatedPayment>("/payments/phonepe/initiate", {
+    method: "POST",
+    body: { orderNumber },
+  });
+}
+
+/**
  * Initiates payment for PhonePe's native SDK (react-native-phonepe-pg v3).
  *
  * The same v2 order the website pays through, handed over as an order token
- * rather than a URL, so the payment runs inside the app instead of a browser.
- * The app has no browser checkout; this is its only way to pay online.
+ * rather than a URL, so the payment runs inside the app.
  */
 export function initiatePaymentSDK(orderNumber: string) {
   return apiFetch<InitiatedSDKPayment>("/payments/phonepe/initiate-sdk", {
