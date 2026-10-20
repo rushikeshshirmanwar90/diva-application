@@ -21,13 +21,7 @@ The library leaves out native setup that it needs. The config plugin adds it at 
 - **iOS, AppDelegate:** posts `ApplicationOpenURLNotification` with `userInfo["openUrl"]` from `application(_:open:options:)`, as PhonePe's setup guide requires, so the SDK regains control after a UPI app returns to `diva://`.
 - **iOS, `app.json`:** `LSApplicationQueriesSchemes` includes `ppemerchantsdkv1/v2/v3`, plus the UPI app schemes.
 
-The SDK only exists in a development or EAS build made after this plugin ran. **The app never opens the phone's browser.** A build without the native module (Expo Go, or an app installed before the SDK was added), or a server without SDK credentials (`initiate-sdk` answers 503), gets PhonePe's hosted page inside the app instead:
-
-- `checkout/pay` shows it in a WebView (`components/checkout/phonepe-web-checkout.tsx`).
-- The page URL is kept in memory by payment reference (`lib/payment-gateway.ts`), never in the route, and only an `https://*.phonepe.com` page is loaded. So a crafted `diva://checkout/pay?url=…` link cannot make the app show some other page.
-- UPI links on that page (`upi://`, `phonepe://`, Android `intent://…;scheme=upi;…`) open the UPI app.
-- When PhonePe redirects to the return URL (`/app-return` or `/checkout/payment-return`), or the customer closes the screen, the app switches to `checkout/payment-return` and asks the backend for the outcome.
-- Untested on a device: whether PhonePe's page inside a WebView offers UPI app buttons, or only QR, UPI ID, cards and net banking. The native SDK build is the better experience.
+The SDK only exists in a development or EAS build made after this plugin ran. **There is no browser fallback.** In Expo Go or a web build, checkout refuses online payment before creating an order, and offers cash on delivery instead. A server without SDK credentials (`initiate-sdk` answers 503) shows that error rather than opening a browser.
 
 After changing the plugin, rebuild natively. Locally, run `npx expo prebuild --clean` first; EAS regenerates the native projects itself.
 
