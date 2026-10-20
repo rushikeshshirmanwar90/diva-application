@@ -160,11 +160,14 @@ export function CheckoutView() {
         return;
       }
 
-      // Online payment runs only inside the app, through PhonePe's native SDK.
-      // A build without it (Expo Go, web) cannot pay online, so stop before
-      // creating an order that could never be paid for.
+      // One payment path for development and release alike: PhonePe's native
+      // SDK, inside the app. Every Diva build has it — the development build
+      // too — so this only trips in a host that lacks our native code (Expo Go,
+      // web), and stops there before creating an order nothing could pay for.
       if (paymentMethod === "PHONEPE" && !isPhonePeNativeAvailable()) {
-        setError("Online payment is only available in the installed Diva app. Please update the app, or choose cash on delivery.");
+        setError(
+          "PhonePe is not included in this copy of the app. Open checkout in the Diva app (the development build or the store app), not Expo Go.",
+        );
         setPlacing(false);
         return;
       }

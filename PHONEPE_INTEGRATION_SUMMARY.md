@@ -21,7 +21,7 @@ The library leaves out native setup that it needs. The config plugin adds it at 
 - **iOS, AppDelegate:** posts `ApplicationOpenURLNotification` with `userInfo["openUrl"]` from `application(_:open:options:)`, as PhonePe's setup guide requires, so the SDK regains control after a UPI app returns to `diva://`.
 - **iOS, `app.json`:** `LSApplicationQueriesSchemes` includes `ppemerchantsdkv1/v2/v3`, plus the UPI app schemes.
 
-The SDK only exists in a development or EAS build made after this plugin ran. **There is no browser fallback.** In Expo Go or a web build, checkout refuses online payment before creating an order, and offers cash on delivery instead. A server without SDK credentials (`initiate-sdk` answers 503) shows that error rather than opening a browser.
+**One flow, in development and release alike.** The SDK only exists in a build made after this plugin ran, so development uses a **development build** (`expo-dev-client`, `eas build --profile development --platform android`). That is the same native app as the store build, loading JavaScript from `npx expo start`. There is no browser or WebView fallback. Expo Go cannot pay at all, because it lacks PhonePe's native code; there, checkout says so before creating an order. A server without SDK credentials (`initiate-sdk` answers 503) shows that error.
 
 After changing the plugin, rebuild natively. Locally, run `npx expo prebuild --clean` first; EAS regenerates the native projects itself.
 

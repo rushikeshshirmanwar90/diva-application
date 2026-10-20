@@ -15,9 +15,10 @@ import { PHONEPE_ENABLE_LOGS } from "@/lib/config";
  *
  * The module is loaded with `require` inside a try/catch, not a static import,
  * so a web build or Expo Go (neither of which can load a native module) still
- * starts rather than failing at import time. Checkout branches on
- * `isPhonePeNativeAvailable()` and refuses online payment where it is false —
- * there is no browser fallback.
+ * starts rather than failing at import time. There is one payment path, the
+ * same in the development build and the store app; checkout only checks
+ * `isPhonePeNativeAvailable()` to refuse running in a host without it, and
+ * there is no browser or WebView fallback.
  */
 
 interface PhonePeSDK {
