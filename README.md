@@ -42,9 +42,10 @@ Checkout creates the order, gets an order token from
 `/payments/phonepe/initiate-sdk`, and pays inside the app with PhonePe's native
 SDK (`react-native-phonepe-pg`, set up by `plugins/withPhonePe.js`). The
 `checkout/payment-return` screen then polls `/payments/phonepe/status/:id`
-until it settles. Only the backend decides that an order is paid. Builds
-without the native module (Expo Go, web) fall back to PhonePe's hosted page in
-the phone's browser. COD orders confirm in-app without leaving. See
+until it settles. Only the backend decides that an order is paid. The app
+never opens a browser to pay: a build without the native module (Expo Go,
+web) refuses online payment and offers COD instead. COD orders confirm in-app
+without leaving. See
 `PHONEPE_INTEGRATION_SUMMARY.md`.
 
 ## Google sign-in

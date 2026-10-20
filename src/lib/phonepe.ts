@@ -14,9 +14,10 @@ import { PHONEPE_ENABLE_LOGS } from "@/lib/config";
  * plugin ran — a development or EAS build, never Expo Go.
  *
  * The module is loaded with `require` inside a try/catch, not a static import,
- * so a web build or Expo Go (neither of which can load a native module) falls
- * back to the hosted page rather than failing at import time. Callers branch on
- * `isPhonePeNativeAvailable()`.
+ * so a web build or Expo Go (neither of which can load a native module) still
+ * starts rather than failing at import time. Checkout branches on
+ * `isPhonePeNativeAvailable()` and refuses online payment where it is false —
+ * there is no browser fallback.
  */
 
 interface PhonePeSDK {

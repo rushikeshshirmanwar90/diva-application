@@ -6,7 +6,7 @@ This document summarizes the issues encountered during the build and payment pro
 
 ## Current flow: PhonePe native SDK, inside the app
 
-Payment runs inside the app with `react-native-phonepe-pg` v3 (PhonePe Standard Checkout v2). There is no browser involved, and PhonePe can hand off straight to an installed UPI app.
+Payment runs inside the app with `react-native-phonepe-pg` v3 (PhonePe Standard Checkout v2). The app never opens a browser to pay, and PhonePe can hand off straight to an installed UPI app.
 
 1. `checkout-view.tsx`: `createOrder` → `initiatePaymentSDK(orderNumber)` (backend `POST /payments/phonepe/initiate-sdk`, which calls PhonePe's `/checkout/v2/sdk/order`) → `payWithPhonePe()` in `src/lib/phonepe.ts`, which runs `init()` then `startTransaction()` with `{ orderId, merchantId, token, paymentMode: { type: "PAY_PAGE" } }`.
 2. Whatever the SDK reports, the app navigates to `/checkout/payment-return?ref=<merchantTransactionId>`, which polls `/payments/phonepe/status/:id`. If the SDK did not report `SUCCESS`, the URL also carries `&sdk=incomplete`. After about 10 s without a result, the screen then shows "Payment not completed" with "Try paying again", instead of waiting 60 s. That hint only changes the screen; it never marks the order failed.
@@ -21,7 +21,7 @@ The library leaves out native setup that it needs. The config plugin adds it at 
 - **iOS, AppDelegate:** posts `ApplicationOpenURLNotification` with `userInfo["openUrl"]` from `application(_:open:options:)`, as PhonePe's setup guide requires, so the SDK regains control after a UPI app returns to `diva://`.
 - **iOS, `app.json`:** `LSApplicationQueriesSchemes` includes `ppemerchantsdkv1/v2/v3`, plus the UPI app schemes.
 
-The SDK only exists in a development or EAS build made after this plugin ran. Expo Go and web builds have no native module, so they fall back to PhonePe's hosted page in the phone's browser, with the backend returning that browser to the website's `/app-return`. A server without SDK credentials (`initiate-sdk` answers 503) falls back the same way.
+The SDK only exists in a development or EAS build made after this plugin ran. **There is no browser fallback.** In Expo Go or a web build, checkout refuses online payment before creating an order, and offers cash on delivery instead. A server without SDK credentials (`initiate-sdk` answers 503) shows that error rather than opening a browser.
 
 After changing the plugin, rebuild natively. Locally, run `npx expo prebuild --clean` first; EAS regenerates the native projects itself.
 

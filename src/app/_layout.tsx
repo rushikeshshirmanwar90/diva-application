@@ -84,10 +84,10 @@ export default function RootLayout() {
                     Naming a screen here moves it ahead of the unnamed ones, so
                     `index` is named first to stay the first route.
 
-                    One payment-return screen per payment: the browser hands the
-                    customer back with `diva://checkout/payment-return?ref=…`,
-                    and that link must reuse the screen already polling for that
-                    ref (even if they've since moved on) rather than push a
+                    One payment-return screen per payment: opening
+                    `checkout/payment-return?ref=…` again, by navigation or a
+                    `diva://` link, reuses the screen already polling for that
+                    ref (even if they've since moved on) rather than pushing a
                     second one with its own loop.
                   */}
                   <Stack.Screen name="index" />

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { AppState, Linking, View } from "react-native";
+import { useEffect, useState } from "react";
+import { AppState, View } from "react-native";
 import { AlertTriangle, Loader, RefreshCw } from "lucide-react-native";
 import { colors } from "@/lib/theme";
 import { useStore } from "@/lib/store/store";
@@ -15,15 +15,8 @@ import { Container } from "@/components/layout/page";
 /**
  * Confirms a payment. On the site this page is where PhonePe redirects the
  * browser back to. In the app it is where checkout lands once PhonePe's native
- * SDK hands back, and it polls our status endpoint for the real outcome.
- *
- * Builds without the SDK (Expo Go, web) arrive with `url` instead: this screen
- * opens PhonePe in the phone's own browser and keeps polling whether or not
- * the customer comes back through it. PhonePe returns that browser to the
- * website's `/app-return`, which links to `diva://checkout/payment-return?ref=…`
- * — the same screen, minus `url`. The root layout makes this screen singular
- * per `ref`, so that link updates this instance rather than stacking a second
- * one with a second polling loop; switching back by hand works just as well.
+ * SDK hands back, and it polls our status endpoint for the real outcome. It
+ * never opens a browser.
  *
  * It never decides anything itself: the backend asks PhonePe, and the webhook
  * settles the order server-side regardless. Nothing in the route params is
@@ -36,44 +29,22 @@ const MAX_ATTEMPTS = 24; // ~60 seconds, counted only once the customer is back
 const INCOMPLETE_MAX_ATTEMPTS = 4; // ~10 seconds, in case the payment went through anyway
 
 /**
- * While the app is in the background the customer is in the browser or a UPI
- * app, still picking an app and entering a PIN. That time is not a stall, so it
+ * While the app is in the background the customer is in a UPI app, still
+ * approving the payment or entering a PIN. That time is not a stall, so it
  * neither burns the ceiling above nor needs a fast cadence — the webhook
  * settles the order either way, and the OS may pause these timers regardless.
  */
 const PAYING_INTERVAL_MS = 5000;
 const PAYING_MAX_MS = 15 * 60_000;
 
-export function PaymentReturnView({
-  reference,
-  gatewayUrl: gatewayUrlParam,
-  incomplete = false,
-}: {
-  reference: string | null;
-  gatewayUrl: string | null;
-  incomplete?: boolean;
-}) {
+export function PaymentReturnView({ reference, incomplete = false }: { reference: string | null; incomplete?: boolean }) {
   const navigate = useNavigate();
   const { clearCart } = useStore();
-
-  // The link back from the browser carries no `url`; keep the one this screen
-  // opened so "Reopen PhonePe" survives that param update.
-  const [gatewayUrl] = useState(gatewayUrlParam);
 
   const [status, setStatus] = useState<PaymentStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [exhausted, setExhausted] = useState(false);
   const [attempt, setAttempt] = useState(0);
-
-  // Once per mount: re-renders and React's development double-effect must not
-  // send the customer to PhonePe a second time.
-  const opened = useRef(false);
-
-  useEffect(() => {
-    if (!gatewayUrl || opened.current) return;
-    opened.current = true;
-    void Linking.openURL(gatewayUrl).catch(() => {});
-  }, [gatewayUrl]);
 
   useEffect(() => {
     if (!reference) return;
@@ -150,7 +121,7 @@ export function PaymentReturnView({
       }
       if (backgroundedAt === null) return;
 
-      // Back from the browser: ask now, then at the fast cadence with a fresh
+      // Back from the UPI app: ask now, then at the fast cadence with a fresh
       // ceiling — also resuming a loop that had already given up.
       backgroundedAt = null;
       attempts = 0;
@@ -274,17 +245,8 @@ export function PaymentReturnView({
       icon={<Loader size={26} strokeWidth={1.4} color={colors.white} />}
       tone="neutral"
       title="Confirming your payment"
-      body={
-        gatewayUrl
-          ? "Complete the payment in your browser, then come back to the app — this screen updates on its own. If you've completed payment, your order will be confirmed automatically."
-          : "Please keep this screen open while we verify your transaction with PhonePe."
-      }
+      body="Please keep this screen open while we verify your transaction with PhonePe."
     >
-      {gatewayUrl ? (
-        <Button variant="outline" size="lg" onPress={() => void Linking.openURL(gatewayUrl).catch(() => {})}>
-          Reopen PhonePe
-        </Button>
-      ) : null}
       {status ? (
         <Sans size={12} color={colors.muted} align="center" style={{ marginTop: 16 }}>
           {formatPaise(status.amountPaise)} · Order <Sans size={12}>{status.orderNumber}</Sans>
