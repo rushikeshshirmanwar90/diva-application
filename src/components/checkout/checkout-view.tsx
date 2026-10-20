@@ -15,7 +15,7 @@ import {
   type CheckoutPaymentMethod,
   type Serviceability,
 } from "@/lib/api/checkout";
-import { isPhonePeNativeAvailable, payWithPhonePe } from "@/lib/phonepe";
+import { payWithPhonePe } from "@/lib/phonepe";
 import { formatPaise } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -31,10 +31,9 @@ import { Container } from "@/components/layout/page";
  * Two-step checkout: address → payment. A port of the site's `CheckoutView`.
  *
  * The difference is the handoff. The site sets `window.location` to PhonePe;
- * the app runs PhonePe's native SDK, so the payment happens inside the app and
- * can hand off straight to an installed UPI app — it never opens a browser.
- * Whatever the SDK reports, the `checkout/payment-return` screen then asks our
- * server for the real outcome.
+ * the app pays inside itself with PhonePe's native SDK, which can hand off
+ * straight to an installed UPI app. Whatever the SDK reports, the
+ * `checkout/payment-return` screen then asks our server for the real outcome.
  */
 
 const steps = ["Address", "Payment"] as const;
@@ -160,18 +159,6 @@ export function CheckoutView() {
         return;
       }
 
-      // One payment path for development and release alike: PhonePe's native
-      // SDK, inside the app. Every Diva build has it — the development build
-      // too — so this only trips in a host that lacks our native code (Expo Go,
-      // web), and stops there before creating an order nothing could pay for.
-      if (paymentMethod === "PHONEPE" && !isPhonePeNativeAvailable()) {
-        setError(
-          "PhonePe is not included in this copy of the app. Open checkout in the Diva app (the development build or the store app), not Expo Go.",
-        );
-        setPlacing(false);
-        return;
-      }
-
       const order = await createOrder({
         items: lines.map((line) => ({ productId: line.product.id, variantId: line.variant.id, quantity: line.qty })),
         addressId: address._id,
@@ -186,8 +173,6 @@ export function CheckoutView() {
         return;
       }
 
-      // A server without SDK credentials answers 503 here, and its message is
-      // shown as-is. There is deliberately no browser fallback.
       const sdk = await initiatePaymentSDK(order.orderNumber);
       const result = await payWithPhonePe({
         merchantId: sdk.merchantId,

@@ -11,14 +11,11 @@ import { PHONEPE_ENABLE_LOGS } from "@/lib/config";
  * The native setup the library itself leaves out (PhonePe's Maven repo, the
  * intermediate activity it launches, the iOS AppDelegate hook) is done by
  * `plugins/withPhonePe.js`, so this only works in a build made after that
- * plugin ran — a development or EAS build, never Expo Go.
+ * plugin ran (any EAS build), never Expo Go.
  *
  * The module is loaded with `require` inside a try/catch, not a static import,
- * so a web build or Expo Go (neither of which can load a native module) still
- * starts rather than failing at import time. There is one payment path, the
- * same in the development build and the store app; checkout only checks
- * `isPhonePeNativeAvailable()` to refuse running in a host without it, and
- * there is no browser or WebView fallback.
+ * so a host without the native module (Expo Go, web) still starts rather than
+ * failing at import time; there `payWithPhonePe` reports `UNAVAILABLE`.
  */
 
 interface PhonePeSDK {

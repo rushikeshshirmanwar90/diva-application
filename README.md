@@ -9,33 +9,14 @@ page.
 
 ## Run it
 
-Development runs in a **development build**, not Expo Go. A development build
-is the Diva app itself, with the same native code as the store app (PhonePe's
-payment SDK included), loading JavaScript live from your computer. So checkout
-and payment behave exactly as they will in production. Expo Go cannot pay:
-it does not contain PhonePe's native code.
-
-Once per phone, and again whenever native code changes (a new native package
-or a change to the `app.json` plugins):
-
 ```sh
 npm install
-eas build --profile development --platform android   # then install the APK it links to
+npx expo start          # then press i (iOS simulator), a (Android) or w (web)
 ```
-
-Then, every day:
-
-```sh
-npx expo start          # open the Diva development build on the phone, or scan the QR code
-```
-
-Release builds use the same native code and the same payment flow:
-`eas build --profile preview` makes an installable APK, and `--profile production`
-makes the store build.
 
 Fonts are bundled through the `expo-font` config plugin (see `app.json`) and
-also loaded at runtime in `src/app/_layout.tsx`, so every build renders the
-brand typefaces.
+also loaded at runtime in `src/app/_layout.tsx`, so both Expo Go and a dev
+build render the brand typefaces.
 
 ## How it talks to the backend
 
@@ -61,10 +42,9 @@ Checkout creates the order, gets an order token from
 `/payments/phonepe/initiate-sdk`, and pays inside the app with PhonePe's native
 SDK (`react-native-phonepe-pg`, set up by `plugins/withPhonePe.js`). The
 `checkout/payment-return` screen then polls `/payments/phonepe/status/:id`
-until it settles. Only the backend decides that an order is paid. There is
-one payment flow, the same in the development build and the store app, and it
-never opens a browser or a WebView. COD orders confirm in-app without leaving.
-See
+until it settles. Only the backend decides that an order is paid. PhonePe's
+SDK is native code, so payment works in EAS builds of the app, not in Expo Go.
+COD orders confirm in-app without leaving. See
 `PHONEPE_INTEGRATION_SUMMARY.md`.
 
 ## Google sign-in
