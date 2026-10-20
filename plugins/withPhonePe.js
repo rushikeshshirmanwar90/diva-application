@@ -1,15 +1,16 @@
-const { AndroidConfig, withAndroidManifest, withAppDelegate, withProjectBuildGradle } = require("expo/config-plugins");
+const { withAppDelegate, withProjectBuildGradle } = require("expo/config-plugins");
 
 /**
  * Native setup for `react-native-phonepe-pg` (PhonePe Standard Checkout SDK).
  *
  * Android
  *   - PhonePe's Maven repository, where the IntentSDK dependency lives.
- *   - `PhonePeSDKIntermediateActivity`. The library starts this activity to run
- *     the payment, but neither its manifest nor the IntentSDK's declares it, so
- *     without this every `startTransaction` fails with "Unable to find explicit
- *     activity class" before PhonePe ever opens. It is an AppCompatActivity, so
- *     it takes the SDK's own translucent AppCompat theme.
+ *
+ *   No manifest changes. The library's own manifest (`AndroidManifestNew.xml`,
+ *   the one AGP 7.3+ reads) already declares `PhonePeSDKIntermediateActivity`,
+ *   and IntentSDK 5.3.1 declares its payment activity and the `<queries>` for
+ *   UPI apps. Declaring the intermediate activity again here, with a different
+ *   theme, is a manifest-merger conflict that fails the Gradle build.
  *
  * iOS
  *   - The AppDelegate forwards every opened URL to the SDK as the
@@ -21,7 +22,6 @@ const { AndroidConfig, withAndroidManifest, withAppDelegate, withProjectBuildGra
  */
 
 const MAVEN_URL = "https://phonepe.mycloudrepo.io/public/repositories/phonepe-intentsdk-android";
-const INTERMEDIATE_ACTIVITY = "com.phonepepaymentsdk.PhonePeSDKIntermediateActivity";
 const NOTIFICATION = "ApplicationOpenURLNotification";
 
 function addMavenRepo(contents) {
@@ -31,21 +31,6 @@ function addMavenRepo(contents) {
     return contents.replace(/allprojects\s*\{\s*repositories\s*\{/, `allprojects {\n        repositories {\n            ${mavenRepo}`);
   }
   return contents.replace(/repositories\s*\{/, `repositories {\n        ${mavenRepo}`);
-}
-
-function addIntermediateActivity(manifest) {
-  const application = AndroidConfig.Manifest.getMainApplicationOrThrow(manifest);
-  application.activity = application.activity ?? [];
-  if (!application.activity.some((activity) => activity.$["android:name"] === INTERMEDIATE_ACTIVITY)) {
-    application.activity.push({
-      $: {
-        "android:name": INTERMEDIATE_ACTIVITY,
-        "android:exported": "false",
-        "android:theme": "@style/phonepeThemeInvisibleCompat",
-      },
-    });
-  }
-  return manifest;
 }
 
 const OPEN_URL_SIGNATURE =
@@ -71,11 +56,6 @@ function withPhonePe(config) {
     return mod;
   });
 
-  config = withAndroidManifest(config, (mod) => {
-    mod.modResults = addIntermediateActivity(mod.modResults);
-    return mod;
-  });
-
   config = withAppDelegate(config, (mod) => {
     if (mod.modResults.language !== "swift") {
       throw new Error("withPhonePe: expected a Swift AppDelegate.");
@@ -89,5 +69,4 @@ function withPhonePe(config) {
 
 module.exports = withPhonePe;
 module.exports.addMavenRepo = addMavenRepo;
-module.exports.addIntermediateActivity = addIntermediateActivity;
 module.exports.addOpenUrlNotification = addOpenUrlNotification;

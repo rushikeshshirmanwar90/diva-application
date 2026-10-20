@@ -17,7 +17,7 @@ Only the backend marks an order paid: its status check, PhonePe's webhook, or th
 The library needs native setup that it doesn't include itself. The config plugin (listed in `app.json`) adds it whenever the native projects are generated:
 
 - **Android: PhonePe's Maven repository** (`https://phonepe.mycloudrepo.io/public/repositories/phonepe-intentsdk-android`), for PhonePe's `IntentSDK` 5.3.1.
-- **Android: `com.phonepepaymentsdk.PhonePeSDKIntermediateActivity`.** `startTransaction` launches this activity, but neither the library nor IntentSDK declares it. Without it, every payment fails with "Unable to find explicit activity class" before PhonePe opens. It uses the SDK's theme, `@style/phonepeThemeInvisibleCompat`.
+- **Android: no manifest changes.** The library's own `AndroidManifestNew.xml` (the manifest AGP 7.3+ uses) already declares `com.phonepepaymentsdk.PhonePeSDKIntermediateActivity`, which `startTransaction` launches. IntentSDK declares its payment activity and the `<queries>` for UPI apps. Don't declare the intermediate activity in the plugin as well: a second declaration with a different theme makes the manifest merger fail the build.
 - **iOS: the AppDelegate** posts `ApplicationOpenURLNotification` with `userInfo["openUrl"]`, as PhonePe's setup guide requires, so the SDK regains control when a UPI app returns to `diva://`.
 - **iOS: `app.json`** lists `ppemerchantsdkv1`, `ppemerchantsdkv2` and `ppemerchantsdkv3` (and the UPI app schemes) in `LSApplicationQueriesSchemes`.
 

@@ -13,6 +13,7 @@
     ],
     "userInterfaceStyle": "light",
     "ios": {
+      "ascAppId": "6823980993",
       "supportsTablet": false,
       "bundleIdentifier": "com.diva.jewel",
       "infoPlist": {
