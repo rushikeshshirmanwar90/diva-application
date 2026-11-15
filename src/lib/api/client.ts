@@ -1,6 +1,5 @@
 import { API_ORIGIN as CONFIGURED_API_ORIGIN } from "@/lib/config";
 import { clearTokens, getTokens, setTokens } from "@/lib/auth/token-store";
-
 /** The backend the app talks to — see `src/lib/config.ts` to change it. */
 export const API_ORIGIN = CONFIGURED_API_ORIGIN;
 
@@ -39,7 +38,27 @@ type FetchInit = {
   signal?: AbortSignal;
   /** Skip the bearer header — public reads that must not 401 on a stale token. */
   anonymous?: boolean;
+  /**
+   * For public reads that are personalised when signed in (e.g. product
+   * reviews minus blocked authors). The backend treats an expired token there
+   * as "signed out" instead of answering 401, so refresh it before sending.
+   */
+  optionalAuth?: boolean;
 };
+
+/** A JWT's `exp` (seconds since epoch), or null when it can't be read. */
+function tokenExpiry(token: string): number | null {
+  try {
+    const part = token.split(".")[1];
+    if (!part) return null;
+    const base64 = part.replace(/-/g, "+").replace(/_/g, "/");
+    const json = atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, "="));
+    const exp = (JSON.parse(json) as { exp?: unknown }).exp;
+    return typeof exp === "number" ? exp : null;
+  } catch {
+    return null;
+  }
+}
 
 function isAuthPath(path: string): boolean {
   return (
@@ -113,6 +132,12 @@ async function request<T>(
   path: string,
   init: FetchInit,
 ): Promise<{ data: T; meta?: Record<string, unknown> }> {
+  if (init.optionalAuth && !init.anonymous) {
+    const tokens = await getTokens();
+    const exp = tokens ? tokenExpiry(tokens.accessToken) : null;
+    if (exp !== null && exp * 1000 < Date.now() + 10_000) await refreshSession();
+  }
+
   let response: Response;
   try {
     response = await send(path, init);

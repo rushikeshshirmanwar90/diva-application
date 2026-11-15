@@ -185,12 +185,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const deleteAccount = useCallback(async () => {
-    try {
-      await authApi.deleteAccount();
-    } finally {
-      setUser(null);
-      setStatus("guest");
-    }
+    // No `finally`: if the delete fails the user stays signed in and sees the error.
+    await authApi.deleteAccount();
+    setUser(null);
+    setStatus("guest");
   }, []);
 
   const value: AuthValue = {

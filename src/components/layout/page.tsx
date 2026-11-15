@@ -9,6 +9,7 @@ import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Header } from "@/components/layout/header";
 import { useBottomNavVisible } from "@/components/layout/bottom-nav";
 import { Footer } from "@/components/layout/footer";
+import { DeveloperCredit } from "@/components/layout/developer-credit";
 import { IconButton } from "@/components/ui/icon-button";
 
 /**
@@ -84,7 +85,14 @@ export function Page({
           contentContainerStyle={[{ paddingBottom: tabs ? 0 : insets.bottom }, contentStyle]}
         >
           {children}
-          {footer && home ? <Footer /> : null}
+          {/* The home footer carries the credit in its bottom strip; everywhere else it closes the scroll. */}
+          {footer && home ? (
+            <Footer />
+          ) : (
+            <Container style={{ paddingVertical: 24 }}>
+              <DeveloperCredit />
+            </Container>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
       {back && !home ? (

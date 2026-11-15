@@ -115,21 +115,13 @@ export function updateProfile(input: UpdateProfileInput) {
   return apiFetch<Profile>("/auth/me", { method: "PATCH", body: input });
 }
 
+/**
+ * Permanently deletes the signed-in account. Throws if the backend refuses, so
+ * the screen can show the error. Tokens are cleared only after a confirmed
+ * delete; otherwise the user would look signed out with the account still live.
+ */
 export async function deleteAccount() {
-  const tokens = await getTokens();
-  try {
-    if (tokens) {
-      await fetch(backendUrl("/auth/delete-account"), {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${tokens.accessToken}`,
-          "X-Refresh-Token": tokens.refreshToken,
-          "X-Client": "mobile",
-        },
-      });
-    }
-  } finally {
-    await clearTokens();
-  }
+  await apiFetch<{ deleted: true }>("/auth/delete-account", { method: "DELETE" });
+  await clearTokens();
   return { deleted: true as const };
 }

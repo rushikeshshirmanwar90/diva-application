@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import { colors } from "@/lib/theme";
-import { DEFAULT_CONTACT as CONTACT } from "@/lib/data/contact-defaults";
 import { useAuth } from "@/lib/auth/auth-context";
 import { ApiError, errorMessage } from "@/lib/api/client";
 import { isValidEmail } from "@/lib/auth/validation";
@@ -88,7 +87,6 @@ export function LoginForm({ redirectTo = "/account", initialEmail = "" }: { redi
             if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: "" }));
             if (error) setError(null);
           }}
-          placeholder={CONTACT.email}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -109,7 +107,6 @@ export function LoginForm({ redirectTo = "/account", initialEmail = "" }: { redi
             if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: "" }));
             if (error) setError(null);
           }}
-          placeholder="••••••••"
           secureTextEntry
           autoComplete="current-password"
           textContentType="password"

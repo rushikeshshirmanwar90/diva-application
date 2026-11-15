@@ -104,6 +104,15 @@ function toWhatsappHref(phone: string): string {
   return `https://wa.me/${phone.replace(/\D/g, "")}`;
 }
 
+/** The app doesn't advertise EMI — drop it from the "·"-separated note even when the admin's copy still lists it. */
+function withoutEmi(note: string): string {
+  return note
+    .split("·")
+    .map((part) => part.trim())
+    .filter((part) => part && !/\bemi\b/i.test(part))
+    .join(" · ");
+}
+
 const DEFAULT_STORES: StoreLocation[] = [
   {
     city: "Bengaluru",
@@ -143,7 +152,7 @@ export function fallbackSiteSettings(): SiteSettings {
     footerBlurb:
       "Fine jewellery made in Bengaluru and Jaipur since 1998. Every piece is hallmarked, priced transparently, and made to be worn — not stored.",
     copyrightText: "© 2026 Diva The Indian Jewel · GSTIN 29AABCD1234E1ZQ",
-    paymentMethodsNote: "UPI · Cards · Net banking · No-cost EMI",
+    paymentMethodsNote: "UPI · Cards · Net banking",
     helpLinks: DEFAULT_HELP_LINKS,
     helpPage: {
       eyebrow: "Help centre",
@@ -194,7 +203,7 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
     supportHours: d.supportHours || fallback.supportHours,
     footerBlurb: d.footerBlurb || fallback.footerBlurb,
     copyrightText: d.copyrightText || fallback.copyrightText,
-    paymentMethodsNote: d.paymentMethodsNote || fallback.paymentMethodsNote,
+    paymentMethodsNote: withoutEmi(d.paymentMethodsNote || "") || fallback.paymentMethodsNote,
     helpLinks: d.helpLinks
       ? d.helpLinks
           .filter((link) => link.isActive !== false && isSafeHref(link.href))

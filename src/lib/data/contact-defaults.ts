@@ -1,4 +1,4 @@
-/** Fallback contact details — used when the backend is unreachable, and as placeholder text. */
+/** Fallback contact details — used when the backend is unreachable. */
 
 export type Contact = {
   phone: string;

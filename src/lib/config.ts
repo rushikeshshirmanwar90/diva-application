@@ -33,7 +33,7 @@
  * Put it back to the line below before a real build (EAS / TestFlight /
  * Play) — a build shipped pointed at a LAN IP only works on your own network.
  */
-export const API_ORIGIN = "https://diva-backend.vercel.app";
+export const API_ORIGIN = "https://admin.divatheindianjewel.com";
 
 // -----------------------------------------------------------------------
 // Google sign-in

@@ -1,4 +1,4 @@
-import { apiGetOrNull } from "@/lib/api/client";
+import { apiFetch, apiGetOrNull } from "@/lib/api/client";
 import { cdnImage, IMG } from "@/lib/images";
 import type { Category, Collection, HeroSlide, Occasion, Product, Review, Testimonial, Variant } from "@/lib/types";
 import { OCCASION_LABELS } from "@/lib/data/occasions";
@@ -74,6 +74,8 @@ type ApiReview = {
   reply?: { body: string; repliedAt: string } | null;
   createdAt: string;
   authorName: string;
+  /** True on the signed-in viewer's own review. */
+  isOwn?: boolean;
 };
 
 type ApiHeroSlide = {
@@ -227,9 +229,15 @@ export async function fetchProduct(slug: string, slugs: SlugMaps): Promise<Produ
   return detail ? toProduct(detail, slugs) : null;
 }
 
-/** Approved reviews for one product. */
+/**
+ * Approved reviews for one product. Sent with the session when signed in, so
+ * the backend leaves out authors this customer blocked and reviews they
+ * reported. Never throws: an empty list on failure.
+ */
 export async function fetchProductReviews(slug: string): Promise<Review[]> {
-  const reviews = await apiGetOrNull<ApiReview[]>(`/products/${encodeURIComponent(slug)}/reviews`);
+  const reviews = await apiFetch<ApiReview[]>(`/products/${encodeURIComponent(slug)}/reviews`, {
+    optionalAuth: true,
+  }).catch(() => null);
 
   return (reviews ?? []).map((review) => ({
     id: review._id,
@@ -243,6 +251,7 @@ export async function fetchProductReviews(slug: string): Promise<Review[]> {
     images: review.images?.map((image) => cdnImage(image.url, IMG.thumb)),
     helpfulCount: review.helpfulCount,
     reply: review.reply ? { body: review.reply.body, at: review.reply.repliedAt } : null,
+    isOwn: review.isOwn ?? false,
   }));
 }
 

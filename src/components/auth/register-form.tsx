@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 import { colors } from "@/lib/theme";
 import { MODEL } from "@/lib/images";
-import { DEFAULT_CONTACT as CONTACT } from "@/lib/data/contact-defaults";
 import { useAuth } from "@/lib/auth/auth-context";
 import { ApiError, errorMessage } from "@/lib/api/client";
 import { isValidEmail, isValidIndianPhone, passwordProblem } from "@/lib/auth/validation";
@@ -185,7 +184,6 @@ export function RegisterForm() {
             label="6-digit code"
             value={otp}
             onChangeText={(value) => setOtp(value.replace(/\D/g, "").slice(0, 6))}
-            placeholder="123456"
             keyboardType="number-pad"
             autoComplete="one-time-code"
             textContentType="oneTimeCode"
@@ -245,7 +243,6 @@ export function RegisterForm() {
             setName(v);
             clearFieldError("name");
           }}
-          placeholder="Mahesh Giri"
           autoComplete="name"
           textContentType="name"
           returnKeyType="next"
@@ -263,7 +260,6 @@ export function RegisterForm() {
             clearFieldError("email");
             setTaken(false);
           }}
-          placeholder={CONTACT.email}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -283,7 +279,6 @@ export function RegisterForm() {
             setPhone(v.replace(/[^\d+]/g, ""));
             clearFieldError("phone");
           }}
-          placeholder={CONTACT.phone}
           keyboardType="phone-pad"
           autoComplete="tel"
           textContentType="telephoneNumber"
@@ -301,7 +296,6 @@ export function RegisterForm() {
             setPassword(v);
             clearFieldError("password");
           }}
-          placeholder="At least 10 characters"
           secureTextEntry
           autoComplete="new-password"
           textContentType="newPassword"

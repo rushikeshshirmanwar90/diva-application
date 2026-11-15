@@ -4,7 +4,6 @@ import { useLocalSearchParams } from "expo-router";
 import { MailCheck } from "lucide-react-native";
 import { colors } from "@/lib/theme";
 import { MODEL } from "@/lib/images";
-import { DEFAULT_CONTACT as CONTACT } from "@/lib/data/contact-defaults";
 import { forgotPassword } from "@/lib/api/auth";
 import { errorMessage } from "@/lib/api/client";
 import { isValidEmail } from "@/lib/auth/validation";
@@ -130,7 +129,7 @@ export default function ForgotPasswordScreen() {
                 setEmail(value);
                 if (error) setError(null);
               }}
-              placeholder={CONTACT.email}
+              placeholder="you@example.com"
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}

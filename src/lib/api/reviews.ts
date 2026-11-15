@@ -49,3 +49,18 @@ export function deleteReview(id: string) {
     method: "DELETE",
   });
 }
+
+export type ReportReason = "OFFENSIVE" | "SPAM" | "IRRELEVANT" | "PERSONAL_INFO" | "OTHER";
+
+/** Flags a review for staff. The backend hides it from this customer straight away. */
+export function reportReview(id: string, reason: ReportReason, details?: string) {
+  return apiFetch<{ reported: true; alreadyReported: boolean }>(`/reviews/${encodeURIComponent(id)}/report`, {
+    method: "POST",
+    body: details ? { reason, details } : { reason },
+  });
+}
+
+/** Hides every review by this review's author from the signed-in customer. */
+export function blockReviewAuthor(id: string) {
+  return apiFetch<{ blocked: true }>(`/reviews/${encodeURIComponent(id)}/block-author`, { method: "POST" });
+}

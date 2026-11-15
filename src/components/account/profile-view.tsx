@@ -9,7 +9,8 @@ import { formatDate, formatPaise } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Checkbox, ErrorBox, Field } from "@/components/ui/field";
 import { Display, Eyebrow, Sans } from "@/components/ui/text";
-import { Link } from "@/components/ui/link";
+import { Link, useNavigate } from "@/components/ui/link";
+import { useStore } from "@/lib/store/store";
 
 /** The account overview: real profile fields, an inline edit form, the two most recent orders. */
 export function AccountProfileView() {
@@ -178,6 +179,74 @@ export function AccountProfileView() {
           </View>
         )}
       </View>
+
+      <DeleteAccountSection />
+    </View>
+  );
+}
+
+/**
+ * In-app account deletion (App Store guideline 5.1.1(v)). Two steps, so a
+ * stray tap can't delete the account.
+ */
+function DeleteAccountSection() {
+  const { deleteAccount } = useAuth();
+  const { notify } = useStore();
+  const navigate = useNavigate();
+
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setError(null);
+    try {
+      await deleteAccount();
+      notify("Your account has been deleted.");
+      navigate("/", "replace");
+    } catch (cause) {
+      setError(errorMessage(cause));
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <View>
+      <View style={{ borderBottomWidth: 1, borderBottomColor: colors.line, paddingBottom: 16 }}>
+        <Display size={24}>Delete account</Display>
+      </View>
+
+      {!confirming ? (
+        <View style={{ marginTop: 24, gap: 16, alignItems: "flex-start" }}>
+          <Sans size={14} leading="relaxed" color={colors.muted}>
+            Permanently delete your Diva account. You will be signed out on every device.
+          </Sans>
+          <Pressable accessibilityRole="button" onPress={() => setConfirming(true)}>
+            {({ pressed }) => (
+              <Eyebrow size={10} color={pressed ? colors.charcoal : colors.error}>
+                Delete my account
+              </Eyebrow>
+            )}
+          </Pressable>
+        </View>
+      ) : (
+        <View style={{ marginTop: 24, gap: 20 }}>
+          {error ? <ErrorBox>{error}</ErrorBox> : null}
+          <Sans size={14} leading="relaxed">
+            Are you sure? This cannot be undone. Your account will be closed, you will be signed out everywhere, and you
+            will not be able to sign in to it again.
+          </Sans>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
+            <Button variant="solid" loading={deleting} disabled={deleting} onPress={() => void handleDelete()}>
+              Yes, delete my account
+            </Button>
+            <Pressable onPress={() => setConfirming(false)} disabled={deleting} style={{ opacity: deleting ? 0.5 : 1 }}>
+              <Eyebrow size={10}>Cancel</Eyebrow>
+            </Pressable>
+          </View>
+        </View>
+      )}
     </View>
   );
 }

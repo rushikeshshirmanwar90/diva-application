@@ -6,6 +6,7 @@ import { occasionCollections } from "@/lib/data/occasions";
 import { Display, Eyebrow, Sans } from "@/components/ui/text";
 import { Link } from "@/components/ui/link";
 import { FacebookIcon, InstagramIcon, YoutubeIcon } from "@/components/ui/social-icons";
+import { DeveloperCredit } from "@/components/layout/developer-credit";
 
 export function Footer() {
   const categoryList = useCategories();
@@ -84,6 +85,7 @@ export function Footer() {
           {settings.copyrightText}
         </Sans>
         <Eyebrow size={10}>{settings.paymentMethodsNote}</Eyebrow>
+        <DeveloperCredit />
       </View>
     </View>
   );

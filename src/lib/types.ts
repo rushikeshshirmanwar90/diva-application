@@ -134,6 +134,8 @@ export type Review = {
   images?: string[];
   helpfulCount?: number;
   reply?: { body: string; at: string } | null;
+  /** The signed-in viewer wrote this one (no Report / Block on it). */
+  isOwn?: boolean;
 };
 
 export type HeroCta = { label: string; href: string };

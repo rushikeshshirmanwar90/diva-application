@@ -3,7 +3,7 @@
     "name": "Diva",
     "slug": "diva-application",
     "owner": "codewithrushi",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": [
@@ -52,6 +52,16 @@
       "expo-router",
       "expo-secure-store",
       "expo-web-browser",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Diva uses your location to fill in your delivery address.",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false,
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ],
       [
         "@react-native-google-signin/google-signin",
         {
