@@ -1,5 +1,5 @@
 import { forwardRef, useState } from "react";
-import { Pressable, TextInput, View, type TextInputProps } from "react-native";
+import { Pressable, TextInput, View, type TextInputInstance, type TextInputProps } from "react-native";
 import { Check, Eye, EyeOff } from "lucide-react-native";
 import { colors, fonts } from "@/lib/theme";
 import { Eyebrow, Sans } from "@/components/ui/text";
@@ -17,7 +17,7 @@ import { Eyebrow, Sans } from "@/components/ui/text";
  * biggest cause of a rejected password is a typo nobody could see, and asking
  * for the password twice only moves that risk into a second field.
  */
-export const Field = forwardRef<TextInput, TextInputProps & {
+export const Field = forwardRef<TextInputInstance, TextInputProps & {
   label?: string;
   hint?: React.ReactNode;
   error?: string;

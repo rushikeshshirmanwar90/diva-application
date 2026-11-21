@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { Pressable, View, type TextInputInstance } from "react-native";
 import { colors } from "@/lib/theme";
 import { MODEL } from "@/lib/images";
 import { DEFAULT_CONTACT as CONTACT } from "@/lib/data/contact-defaults";
@@ -21,9 +21,9 @@ export function RegisterForm() {
   const navigate = useNavigate();
   const { register, verifyOtp, resendOtp, loginWithGoogle } = useAuth();
 
-  const emailRef = useRef<TextInput>(null);
-  const phoneRef = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInputInstance>(null);
+  const phoneRef = useRef<TextInputInstance>(null);
+  const passwordRef = useRef<TextInputInstance>(null);
 
   const [step, setStep] = useState<"form" | "otp">("form");
   const [name, setName] = useState("");

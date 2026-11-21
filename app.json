@@ -13,7 +13,6 @@
     ],
     "userInterfaceStyle": "light",
     "ios": {
-      "ascAppId": "6823980993",
       "supportsTablet": false,
       "bundleIdentifier": "com.diva.jewel",
       "infoPlist": {
@@ -84,7 +83,9 @@
             "node_modules/@expo-google-fonts/jost/500Medium/Jost_500Medium.ttf"
           ]
         }
-      ]
+      ],
+      "expo-image",
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": false,

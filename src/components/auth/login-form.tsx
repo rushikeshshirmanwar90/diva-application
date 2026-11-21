@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { TextInput, View } from "react-native";
+import { View, type TextInputInstance } from "react-native";
 import { colors } from "@/lib/theme";
 import { DEFAULT_CONTACT as CONTACT } from "@/lib/data/contact-defaults";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -15,7 +15,7 @@ import { InlineLink, useNavigate } from "@/components/ui/link";
 export function LoginForm({ redirectTo = "/account", initialEmail = "" }: { redirectTo?: string; initialEmail?: string }) {
   const navigate = useNavigate();
   const { login, loginWithGoogle } = useAuth();
-  const passwordRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInputInstance>(null);
 
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
