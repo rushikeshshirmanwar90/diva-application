@@ -1,4 +1,4 @@
-import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, View, type StyleProp, type ViewStyle } from "react-native";
+import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, View, type ScrollViewInstance, type StyleProp, type ViewStyle } from "react-native";
 import { router, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -40,7 +40,7 @@ export function Page({
   /** Explicitly show or hide the header bar. Defaults to true on home, shop, and bag tabs. */
   header?: boolean;
   contentStyle?: StyleProp<ViewStyle>;
-  scrollRef?: React.Ref<ScrollView>;
+  scrollRef?: React.Ref<ScrollViewInstance>;
 }) {
   const insets = useSafeAreaInsets();
   const { refreshing, refresh } = useCatalogueState();

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View, type TextInputInstance } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
@@ -35,7 +35,7 @@ function SearchPanel({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<TextInputInstance>(null);
 
   useEffect(() => {
     const t = setTimeout(() => inputRef.current?.focus(), 350);

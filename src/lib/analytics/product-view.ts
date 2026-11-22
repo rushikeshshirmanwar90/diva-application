@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Crypto from "expo-crypto";
+import { uuid } from "expo";
 import { backendUrl } from "@/lib/api/client";
 import { getTokens } from "@/lib/auth/token-store";
 
@@ -19,7 +19,7 @@ async function visitorId(): Promise<string | null> {
   try {
     const existing = await AsyncStorage.getItem(VISITOR_KEY);
     if (existing) return existing;
-    const fresh = Crypto.randomUUID();
+    const fresh = uuid.v4();
     await AsyncStorage.setItem(VISITOR_KEY, fresh);
     return fresh;
   } catch {

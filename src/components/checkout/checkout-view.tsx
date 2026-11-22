@@ -11,10 +11,11 @@ import { createAddress, listAddresses, type Address } from "@/lib/api/addresses"
 import {
   checkServiceability,
   createOrder,
-  initiatePayment,
+  initiatePaymentSDK,
   type CheckoutPaymentMethod,
   type Serviceability,
 } from "@/lib/api/checkout";
+import { payWithPhonePe } from "@/lib/phonepe";
 import { formatPaise } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -30,9 +31,9 @@ import { Container } from "@/components/layout/page";
  * Two-step checkout: address → payment. A port of the site's `CheckoutView`.
  *
  * The difference is the handoff. The site sets `window.location` to PhonePe;
- * here the `checkout/payment-return` screen opens PhonePe's hosted page in the
- * phone's own browser and polls for the outcome. PhonePe then sends that
- * browser to the website's `/app-return`, which links back into the app.
+ * the app pays inside itself with PhonePe's native SDK, which can hand off
+ * straight to an installed UPI app. Whatever the SDK reports, the
+ * `checkout/payment-return` screen then asks our server for the real outcome.
  */
 
 const steps = ["Address", "Payment"] as const;
@@ -172,9 +173,24 @@ export function CheckoutView() {
         return;
       }
 
-      const payment = await initiatePayment(order.orderNumber);
+      const sdk = await initiatePaymentSDK(order.orderNumber);
+      const result = await payWithPhonePe({
+        merchantId: sdk.merchantId,
+        orderId: sdk.orderId,
+        token: sdk.token,
+        environment: sdk.environment,
+        flowId: sdk.merchantTransactionId,
+      });
+
+      // Even SUCCESS is only the SDK's word for it. The return screen asks
+      // our server, which asks PhonePe — the customer's device never decides.
+      // `incomplete` only shortens how long that screen waits before
+      // offering a retry; it never marks anything failed.
+      const ref = encodeURIComponent(sdk.merchantTransactionId);
       navigate(
-        `/checkout/payment-return?ref=${encodeURIComponent(payment.merchantTransactionId)}&url=${encodeURIComponent(payment.redirectUrl)}`,
+        result.status === "SUCCESS"
+          ? `/checkout/payment-return?ref=${ref}`
+          : `/checkout/payment-return?ref=${ref}&sdk=incomplete`,
         "replace",
       );
     } catch (cause) {

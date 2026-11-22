@@ -1,5 +1,5 @@
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { View, type ScrollViewInstance } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { colors } from "@/lib/theme";
 import type { Product, Review } from "@/lib/types";
@@ -40,7 +40,7 @@ export default function ProductScreen() {
   const [detail, setDetail] = useState<{ slug: string; product: Product | null } | undefined>(undefined);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [related, setRelated] = useState<Product[]>([]);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const [reviewsY, setReviewsY] = useState(0);
 
   const loadReviews = useCallback(async () => {

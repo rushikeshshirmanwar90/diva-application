@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Pressable, View } from "react-native";
-import { ArrowRight } from "lucide-react-native";
+import { Alert, Platform, Pressable, View } from "react-native";
+import { ArrowRight, LogOut } from "lucide-react-native";
 import { colors } from "@/lib/theme";
 import { useAuth } from "@/lib/auth/auth-context";
 import { listOrders, type Order } from "@/lib/api/checkout";
@@ -14,7 +14,9 @@ import { useStore } from "@/lib/store/store";
 
 /** The account overview: real profile fields, an inline edit form, the two most recent orders. */
 export function AccountProfileView() {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
+  const navigate = useNavigate();
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
@@ -67,6 +69,28 @@ export function AccountProfileView() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const doLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await logout();
+    } finally {
+      setLoggingOut(false);
+      navigate("/login", "replace");
+    }
+  };
+
+  // Native asks first; Alert buttons do nothing on web, so web logs out directly.
+  const handleLogout = () => {
+    if (Platform.OS === "web") {
+      void doLogout();
+      return;
+    }
+    Alert.alert("Log out?", "You'll need to sign in again to see your orders and check out.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Log out", style: "destructive", onPress: () => void doLogout() },
+    ]);
   };
 
   const profile: [string, string][] = [

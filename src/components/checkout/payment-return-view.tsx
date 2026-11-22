@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { AppState, Linking, View } from "react-native";
+import { useEffect, useState } from "react";
+import { View } from "react-native";
 import { AlertTriangle, Loader, RefreshCw } from "lucide-react-native";
 import { colors } from "@/lib/theme";
 import { useStore } from "@/lib/store/store";
@@ -13,151 +13,72 @@ import { Logo } from "@/components/layout/logo";
 import { Container } from "@/components/layout/page";
 
 /**
- * Confirms a payment. On the site this page is where PhonePe redirects the
- * browser back to; here it also *opens* PhonePe, in the phone's own browser,
- * and keeps polling our status endpoint whether or not the customer comes back
- * through the browser. PhonePe returns that browser to the website's
- * `/app-return`, which links to `diva://checkout/payment-return?ref=…` — the
- * same screen, minus `url`. The root layout makes this screen singular per
- * `ref`, so that link updates this instance rather than stacking a second one
- * with a second polling loop; switching back by hand works just as well.
+ * Confirms a payment once PhonePe's SDK hands back to the app.
  *
- * It never decides anything itself: the backend asks PhonePe, and the webhook
- * settles the order server-side regardless. Nothing in the route params is
- * trusted beyond being the reference to ask about.
+ * It never decides anything itself: it polls our status endpoint, which asks
+ * PhonePe directly, and PhonePe's webhook settles the order server-side
+ * regardless. `incomplete` (the SDK said the customer backed out) only
+ * shortens the wait before offering a retry.
+ *
+ * Polling stops at a hard ceiling. A payment still pending after that is not
+ * lost — the reconciliation sweep resolves it — so the honest thing to show
+ * is "we are still confirming", not a spinner forever.
  */
 
 const POLL_INTERVAL_MS = 2500;
-const MAX_ATTEMPTS = 24; // ~60 seconds, counted only once the customer is back
+const MAX_ATTEMPTS = 24; // ~60 seconds
+const INCOMPLETE_MAX_ATTEMPTS = 4; // ~10 seconds, in case the payment went through anyway
 
-/**
- * While the app is in the background the customer is in the browser or a UPI
- * app, still picking an app and entering a PIN. That time is not a stall, so it
- * neither burns the ceiling above nor needs a fast cadence — the webhook
- * settles the order either way, and the OS may pause these timers regardless.
- */
-const PAYING_INTERVAL_MS = 5000;
-const PAYING_MAX_MS = 15 * 60_000;
-
-export function PaymentReturnView({ reference, gatewayUrl: gatewayUrlParam }: { reference: string | null; gatewayUrl: string | null }) {
+export function PaymentReturnView({ reference, incomplete = false }: { reference: string | null; incomplete?: boolean }) {
   const navigate = useNavigate();
   const { clearCart } = useStore();
-
-  // The link back from the browser carries no `url`; keep the one this screen
-  // opened so "Reopen PhonePe" survives that param update.
-  const [gatewayUrl] = useState(gatewayUrlParam);
 
   const [status, setStatus] = useState<PaymentStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [exhausted, setExhausted] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
-  // Once per mount: re-renders and React's development double-effect must not
-  // send the customer to PhonePe a second time.
-  const opened = useRef(false);
-
-  useEffect(() => {
-    if (!gatewayUrl || opened.current) return;
-    opened.current = true;
-    void Linking.openURL(gatewayUrl).catch(() => {});
-  }, [gatewayUrl]);
-
   useEffect(() => {
     if (!reference) return;
 
     const controller = new AbortController();
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    const maxAttempts = incomplete ? INCOMPLETE_MAX_ATTEMPTS : MAX_ATTEMPTS;
     let attempts = 0;
-    let inFlight = false;
-    let pollOnReturn = false;
-    // SUCCESS, FAILED or an error: nothing further to ask.
-    let settled = false;
-    let backgroundedAt: number | null = AppState.currentState === "active" ? null : Date.now();
-
-    const schedule = (delayMs: number) => {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => void poll(), delayMs);
-    };
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
     const poll = async () => {
-      if (settled || inFlight) return;
-      inFlight = true;
-      if (backgroundedAt === null) attempts += 1;
+      attempts += 1;
 
       try {
         const result = await paymentStatus(reference, controller.signal);
         setStatus(result);
 
         if (result.status === "SUCCESS") {
-          settled = true;
           clearCart();
           navigate(`/order-confirmed?order=${encodeURIComponent(result.orderNumber)}`, "replace");
           return;
         }
-        if (result.status === "FAILED") {
-          settled = true;
-          return;
-        }
+        if (result.status === "FAILED") return;
       } catch (cause) {
         if (controller.signal.aborted) return;
-        settled = true;
         setError(errorMessage(cause));
         return;
-      } finally {
-        inFlight = false;
       }
 
-      // The customer came back while that request was in flight.
-      if (pollOnReturn) {
-        pollOnReturn = false;
-        schedule(0);
-        return;
-      }
-
-      if (backgroundedAt !== null) {
-        if (Date.now() - backgroundedAt >= PAYING_MAX_MS) {
-          setExhausted(true);
-          return;
-        }
-        schedule(PAYING_INTERVAL_MS);
-        return;
-      }
-
-      if (attempts >= MAX_ATTEMPTS) {
+      if (attempts >= maxAttempts) {
         setExhausted(true);
         return;
       }
-      schedule(POLL_INTERVAL_MS);
+      timer = setTimeout(poll, POLL_INTERVAL_MS);
     };
-
-    const subscription = AppState.addEventListener("change", (next) => {
-      if (next !== "active") {
-        backgroundedAt ??= Date.now();
-        return;
-      }
-      if (backgroundedAt === null) return;
-
-      // Back from the browser: ask now, then at the fast cadence with a fresh
-      // ceiling — also resuming a loop that had already given up.
-      backgroundedAt = null;
-      attempts = 0;
-      if (settled) return;
-      setExhausted(false);
-      if (inFlight) {
-        pollOnReturn = true;
-        return;
-      }
-      schedule(0);
-    });
 
     void poll();
 
     return () => {
-      subscription.remove();
       controller.abort();
       if (timer) clearTimeout(timer);
     };
-  }, [reference, clearCart, navigate, attempt]);
+  }, [reference, incomplete, clearCart, navigate, attempt]);
 
   if (!reference) {
     return (
@@ -215,6 +136,29 @@ export function PaymentReturnView({ reference, gatewayUrl: gatewayUrlParam }: { 
     );
   }
 
+  if (exhausted && incomplete) {
+    return (
+      <Shell
+        icon={<AlertTriangle size={26} strokeWidth={1.4} color={colors.white} />}
+        tone="error"
+        title="Payment not completed"
+        body="The payment was not completed in PhonePe. If money did leave your account, your order will be confirmed automatically — check Orders in a few minutes."
+      >
+        <Sans size={12} color={colors.muted} align="center" style={{ marginBottom: 24 }}>
+          Your bag is still intact. Reference <Sans size={12}>{reference}</Sans>
+        </Sans>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 12 }}>
+          <Button href="/checkout" variant="gold" size="lg">
+            Try paying again
+          </Button>
+          <Button href="/account/orders" variant="outline" size="lg">
+            View my orders
+          </Button>
+        </View>
+      </Shell>
+    );
+  }
+
   if (exhausted) {
     return (
       <Shell
@@ -238,17 +182,8 @@ export function PaymentReturnView({ reference, gatewayUrl: gatewayUrlParam }: { 
       icon={<Loader size={26} strokeWidth={1.4} color={colors.white} />}
       tone="neutral"
       title="Confirming your payment"
-      body={
-        gatewayUrl
-          ? "Complete the payment in your browser, then come back to the app — this screen updates on its own. If you've completed payment, your order will be confirmed automatically."
-          : "Please keep this screen open while we verify your transaction with PhonePe."
-      }
+      body="Please keep this screen open while we verify your transaction with PhonePe."
     >
-      {gatewayUrl ? (
-        <Button variant="outline" size="lg" onPress={() => void Linking.openURL(gatewayUrl).catch(() => {})}>
-          Reopen PhonePe
-        </Button>
-      ) : null}
       {status ? (
         <Sans size={12} color={colors.muted} align="center" style={{ marginTop: 16 }}>
           {formatPaise(status.amountPaise)} · Order <Sans size={12}>{status.orderNumber}</Sans>

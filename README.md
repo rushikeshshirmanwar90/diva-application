@@ -38,14 +38,14 @@ native builds are not.
 
 ## Payments
 
-Checkout creates the order and initiates PhonePe like the site does (there is
-no native PhonePe SDK). The `checkout/payment-return` screen then opens the
-gateway in the phone's own browser and polls `/payments/phonepe/status/:id`
-until it settles: slowly while the app is in the background, and immediately
-when it comes back. After payment, PhonePe sends the browser to the website's
-`/app-return`, which links back to `diva://checkout/payment-return?ref=…`.
-Only the backend decides that an order is paid. COD orders confirm in-app
-without leaving. See `PHONEPE_INTEGRATION_SUMMARY.md`.
+Checkout creates the order, gets an order token from
+`/payments/phonepe/initiate-sdk`, and pays inside the app with PhonePe's native
+SDK (`react-native-phonepe-pg`, set up by `plugins/withPhonePe.js`). The
+`checkout/payment-return` screen then polls `/payments/phonepe/status/:id`
+until it settles. Only the backend decides that an order is paid. PhonePe's
+SDK is native code, so payment works in EAS builds of the app, not in Expo Go.
+COD orders confirm in-app without leaving. See
+`PHONEPE_INTEGRATION_SUMMARY.md`.
 
 ## Google sign-in
 
