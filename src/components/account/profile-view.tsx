@@ -204,6 +204,19 @@ export function AccountProfileView() {
         )}
       </View>
 
+      <View style={{ borderTopWidth: 1, borderTopColor: colors.line, paddingTop: 32 }}>
+        <Button
+          variant="outline"
+          loading={loggingOut}
+          disabled={loggingOut}
+          icon={<LogOut size={14} strokeWidth={1.5} color={colors.charcoal} />}
+          accessibilityLabel="Log out"
+          onPress={handleLogout}
+        >
+          Log out
+        </Button>
+      </View>
+
       <DeleteAccountSection />
     </View>
   );
