@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Platform, Pressable, View, type PressableProps } from "react-native";
+import * as AppleAuthentication from "expo-apple-authentication";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
@@ -9,6 +10,7 @@ import {
   GOOGLE_WEB_CLIENT_ID as WEB_CLIENT_ID,
   GOOGLE_EXPO_REDIRECT_URI,
 } from "@/lib/config";
+import { useAuth } from "@/lib/auth/auth-context";
 import { useStoreActions } from "@/lib/store/store";
 import { Sans } from "@/components/ui/text";
 import { GoogleMark } from "@/components/ui/social-icons";
@@ -218,6 +220,33 @@ function GoogleUnavailableButton({ disabled }: { disabled?: boolean }) {
 }
 
 export function SocialButtons({ onCredential, disabled }: { onCredential: (idToken: string) => void; disabled?: boolean }) {
+  const { loginWithApple } = useAuth();
+  const { notify } = useStoreActions();
+
+  const handleApple = async () => {
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      if (!credential.identityToken) {
+        notify("Apple sign-in did not return a token. Please try again.");
+        return;
+      }
+      const fullName = credential.fullName
+        ? [credential.fullName.givenName, credential.fullName.familyName].filter(Boolean).join(" ")
+        : null;
+      await loginWithApple(credential.identityToken, fullName);
+    } catch (err: unknown) {
+      const code = (err as { code?: string })?.code;
+      if (code === "ERR_REQUEST_CANCELED") return;
+      console.error("[AppleSignIn] error:", err);
+      notify("Apple sign-in failed. Please try again.");
+    }
+  };
+
   return (
     <View style={{ marginTop: 32 }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
@@ -227,6 +256,16 @@ export function SocialButtons({ onCredential, disabled }: { onCredential: (idTok
         </Sans>
         <View style={{ flex: 1, height: 1, backgroundColor: colors.line }} />
       </View>
+      {/* Sign in with Apple — iOS only, required by App Store guideline 4.8 */}
+      {Platform.OS === "ios" && (
+        <AppleAuthentication.AppleAuthenticationButton
+          buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+          cornerRadius={4}
+          style={{ width: "100%", height: 44, marginTop: 16 }}
+          onPress={() => void handleApple()}
+        />
+      )}
       {GOOGLE_AVAILABLE ? (
         <GoogleSignInButton onCredential={onCredential} disabled={disabled} />
       ) : (

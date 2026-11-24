@@ -80,6 +80,15 @@ export async function loginWithGoogle(idToken: string) {
   return establish(session);
 }
 
+/** `identityToken` is the JWT Apple hands the app. */
+export async function loginWithApple(identityToken: string, name?: string | null) {
+  const session = await apiFetch<Session>("/auth/apple", {
+    method: "POST",
+    body: { identityToken, name: name ?? undefined, audience: "storefront" },
+  });
+  return establish(session);
+}
+
 /** Always "sent", whether or not the address exists — see the backend's note. */
 export function forgotPassword(email: string) {
   return apiFetch<{ sent: true }>("/auth/forgot-password", { method: "POST", body: { email } });

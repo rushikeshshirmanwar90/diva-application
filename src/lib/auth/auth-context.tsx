@@ -54,6 +54,7 @@ type AuthValue = {
   user: Profile | null;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: (idToken: string) => Promise<void>;
+  loginWithApple: (identityToken: string, name?: string | null) => Promise<void>;
   register: (input: RegisterInput) => Promise<{ email: string }>;
   verifyOtp: (email: string, otp: string) => Promise<void>;
   resendOtp: (email: string) => Promise<void>;
@@ -110,6 +111,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithGoogle = useCallback(
     async (idToken: string) => {
       await authApi.loginWithGoogle(idToken);
+      await hydrate();
+    },
+    [hydrate],
+  );
+
+  const loginWithApple = useCallback(
+    async (identityToken: string, name?: string | null) => {
+      await authApi.loginWithApple(identityToken, name);
       await hydrate();
     },
     [hydrate],
@@ -196,6 +205,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     login,
     loginWithGoogle,
+    loginWithApple,
     register,
     verifyOtp,
     resendOtp,
